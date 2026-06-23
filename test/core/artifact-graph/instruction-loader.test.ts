@@ -606,4 +606,37 @@ rules:
       expect(specsIdx).toBeLessThan(tasksIdx);
     });
   });
+
+  describe('generateInstructions constitution injection', () => {
+    let tempDir: string;
+
+    beforeEach(() => {
+      tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-test-const-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    });
+
+    it('includes constitution content when openspec/constitution.md exists', () => {
+      const openspecDir = path.join(tempDir, 'openspec');
+      fs.mkdirSync(openspecDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(openspecDir, 'constitution.md'),
+        '## I. Test Principle (MUST)\nspec MUST be testable.\n'
+      );
+
+      const context = loadChangeContext(tempDir, 'test-change');
+      const instructions = generateInstructions(context, 'proposal', tempDir);
+
+      expect(instructions.constitution).toContain('I. Test Principle');
+    });
+
+    it('has undefined constitution when openspec/constitution.md does not exist', () => {
+      const context = loadChangeContext(tempDir, 'test-change');
+      const instructions = generateInstructions(context, 'proposal', tempDir);
+
+      expect(instructions.constitution).toBeUndefined();
+    });
+  });
 });

@@ -16,6 +16,7 @@ import {
   type PlanningHomeSummary,
 } from '../change-status-policy.js';
 import { readProjectConfig, validateConfigRules } from '../project-config.js';
+import { readConstitutionFile } from '../constitution/index.js';
 import type { PlanningHome } from '../planning-home.js';
 import type { ChangeMetadata, InitiativeLink } from '../change-metadata/index.js';
 import type { Artifact, CompletedSet } from './types.js';
@@ -95,6 +96,8 @@ export interface ArtifactInstructions {
   context: string | undefined;
   /** Artifact-specific rules from config (constraints for AI, not to be included in output) */
   rules: string[] | undefined;
+  /** Project constitution (plan-level invariants — constraints for AI, not to be included in output) */
+  constitution: string | undefined;
   /** Template content (structure to follow - this IS the output format) */
   template: string;
   /** Dependencies with completion status and paths */
@@ -319,6 +322,9 @@ export function generateInstructions(
   const configContext = projectConfig?.context?.trim() || undefined;
   const rulesForArtifact = projectConfig?.rules?.[artifactId];
   const configRules = rulesForArtifact && rulesForArtifact.length > 0 ? rulesForArtifact : undefined;
+  const constitutionContent = effectiveProjectRoot
+    ? readConstitutionFile(effectiveProjectRoot)?.trim() || undefined
+    : undefined;
 
   return {
     changeName: context.changeName,
@@ -334,6 +340,7 @@ export function generateInstructions(
     instruction: artifact.instruction,
     context: configContext,
     rules: configRules,
+    constitution: constitutionContent,
     template: templateContent,
     dependencies,
     unlocks,

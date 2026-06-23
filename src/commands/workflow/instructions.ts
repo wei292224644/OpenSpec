@@ -116,6 +116,7 @@ export function printInstructionsText(instructions: ArtifactInstructions, isBloc
     instruction,
     context,
     rules,
+    constitution,
     template,
     dependencies,
     unlocks,
@@ -153,6 +154,15 @@ export function printInstructionsText(instructions: ArtifactInstructions, isBloc
     console.log('<!-- This is background information for you. Do NOT include this in your output. -->');
     console.log(context);
     console.log('</project_context>');
+    console.log();
+  }
+
+  // Constitution (AI constraint - do not include in output)
+  if (constitution) {
+    console.log('<constitution>');
+    console.log('<!-- Plan-level invariants. Do NOT include in artifact output. -->');
+    console.log(constitution);
+    console.log('</constitution>');
     console.log();
   }
 
