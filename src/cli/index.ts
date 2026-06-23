@@ -37,6 +37,8 @@ import {
   type NewChangeOptions,
   type SetChangeOptions,
 } from '../commands/workflow/index.js';
+import { constitutionInstructionsCommand } from '../commands/workflow/constitution-instructions.js';
+import { analyzeInstructionsCommand } from '../commands/workflow/analyze-instructions.js';
 import { maybeShowTelemetryNotice, trackCommand, shutdown } from '../telemetry/index.js';
 
 const program = new Command();
@@ -483,9 +485,13 @@ program
   .option('--json', 'Output as JSON')
   .action(async (artifactId: string | undefined, options: InstructionsOptions) => {
     try {
-      // Special case: "apply" is not an artifact, but a command to get apply instructions
+      // Special case: "apply", "constitution", "analyze" are not artifacts
       if (artifactId === 'apply') {
         await applyInstructionsCommand(options);
+      } else if (artifactId === 'constitution') {
+        await constitutionInstructionsCommand({ json: options.json });
+      } else if (artifactId === 'analyze') {
+        await analyzeInstructionsCommand({ change: options.change, json: options.json });
       } else {
         await instructionsCommand(artifactId, options);
       }
