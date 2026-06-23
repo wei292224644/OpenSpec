@@ -1,0 +1,12 @@
+rules:
+  - "Each clause MUST have Roman numeral id + title + level (MUST) or (SHOULD)"
+  - "Use normative keywords MUST, MUST NOT, SHOULD — reject vague 'should try' or 'prefer'"
+  - "Each clause MUST have at least one 判据 with type [structure] or [judgment]"
+  - "judgment criteria MUST be itemized yes/no questions, not blanket labels"
+  - "One principle per clause — do not combine unrelated rules"
+  - "Only plan-level principles — rules requiring code inspection belong in linter/CI"
+  - "structure criteria are checked by parsing artifact structure; judgment by reading artifact content"
+instruction: |
+  Draft or revise openspec/constitution.md as the project's plan-level invariant.
+  Guide the user through grilling: for each principle ask what analyze would look at
+  in proposal/design/specs to detect a violation. Reject untestable wording.
