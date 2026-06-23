@@ -45,6 +45,7 @@ import { getGlobalConfig, type Delivery, type Profile } from './global-config.js
 import { getProfileWorkflows, CORE_WORKFLOWS, ALL_WORKFLOWS } from './profiles.js';
 import { getAvailableTools } from './available-tools.js';
 import { migrateIfNeeded } from './migration.js';
+import { createConstitutionSkeletonIfMissing } from './init-constitution.js';
 
 const require = createRequire(import.meta.url);
 const { version: OPENSPEC_VERSION } = require('../../package.json');
@@ -149,6 +150,11 @@ export class InitCommand {
 
     // Create config.yaml if needed
     const configStatus = await this.createConfig(openspecPath, extendMode);
+
+    // Create constitution.md skeleton if interactive or --force
+    if (this.canPromptInteractively() || this.force) {
+      createConstitutionSkeletonIfMissing(projectPath);
+    }
 
     // Display success message
     this.displaySuccessMessage(projectPath, validatedTools, results, configStatus);
