@@ -17,6 +17,17 @@ export const InitiativeLinkSchema = z.object({
 
 export type InitiativeLink = z.infer<typeof InitiativeLinkSchema>;
 
+export const WaiverSchema = z.object({
+  principle: z
+    .string()
+    .regex(/^[IVX]+$/u, {
+      message: 'principle must be a constitution clause id in roman numerals (e.g. I, II, III)',
+    }),
+  reason: z.string().min(1),
+}).strict();
+
+export type Waiver = z.infer<typeof WaiverSchema>;
+
 // Per-change metadata schema. The schema field is validated against available
 // workflow schemas when metadata is read or written.
 export const ChangeMetadataSchema = z.object({
@@ -30,6 +41,7 @@ export const ChangeMetadataSchema = z.object({
   goal: z.string().min(1).optional(),
   affected_areas: z.array(z.string().min(1)).optional(),
   initiative: InitiativeLinkSchema.optional(),
+  waivers: z.array(WaiverSchema).optional(),
 });
 
 export type ChangeMetadata = z.infer<typeof ChangeMetadataSchema>;
