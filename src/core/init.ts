@@ -152,12 +152,13 @@ export class InitCommand {
     const configStatus = await this.createConfig(openspecPath, extendMode);
 
     // Create constitution.md skeleton if interactive or --force
-    if (this.canPromptInteractively() || this.force) {
-      createConstitutionSkeletonIfMissing(projectPath);
-    }
+    const constitutionStatus: 'created' | 'exists' | 'skipped' =
+      this.canPromptInteractively() || this.force
+        ? createConstitutionSkeletonIfMissing(projectPath)
+        : 'skipped';
 
     // Display success message
-    this.displaySuccessMessage(projectPath, validatedTools, results, configStatus);
+    this.displaySuccessMessage(projectPath, validatedTools, results, configStatus, constitutionStatus);
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -640,7 +641,8 @@ export class InitCommand {
       removedCommandCount: number;
       removedSkillCount: number;
     },
-    configStatus: 'created' | 'exists' | 'skipped'
+    configStatus: 'created' | 'exists' | 'skipped',
+    constitutionStatus: 'created' | 'exists' | 'skipped'
   ): void {
     console.log();
     console.log(chalk.bold('OpenSpec Setup Complete'));
@@ -700,6 +702,15 @@ export class InitCommand {
       console.log(`Config: openspec/${configName} (exists)`);
     } else {
       console.log(chalk.dim(`Config: skipped (non-interactive mode)`));
+    }
+
+    // Constitution status
+    if (constitutionStatus === 'created') {
+      console.log(`Constitution: openspec/constitution.md (created)`);
+    } else if (constitutionStatus === 'exists') {
+      console.log(`Constitution: openspec/constitution.md (exists)`);
+    } else {
+      console.log(chalk.dim(`Constitution: skipped (non-interactive mode)`));
     }
 
     // Getting started (task 7.6: show propose if in profile)

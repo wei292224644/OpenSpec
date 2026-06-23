@@ -25,6 +25,16 @@ describe('parseConstitution', () => {
     expect(clauses[1].criteria.map((c) => c.type)).toEqual(['structure', 'judgment']);
   });
 
+  it('captures 正例/反例 for a criterion', () => {
+    const clauses = parseConstitution(SAMPLE);
+    expect(clauses[0].criteria[0]).toMatchObject({
+      positive: '"用户提交后看到确认"',
+      negative: '"调用 saveToDb()"',
+    });
+    // criteria without examples leave the fields undefined
+    expect(clauses[1].criteria[0].positive).toBeUndefined();
+  });
+
   it('returns empty array for content with no clauses', () => {
     expect(parseConstitution('# Project Constitution\n\nno clauses here')).toEqual([]);
   });

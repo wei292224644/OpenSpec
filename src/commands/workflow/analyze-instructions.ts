@@ -25,6 +25,10 @@ export interface AnalyzeInstructions {
 }
 
 export function buildAnalyzeInstructions(projectRoot: string, changeName: string): AnalyzeInstructions {
+  const changeDir = path.join(projectRoot, 'openspec', 'changes', changeName);
+  if (!fs.existsSync(changeDir)) {
+    throw new Error(`Change "${changeName}" not found at ${changeDir}`);
+  }
   const constitution = readConstitutionFile(projectRoot);
   const clauses = constitution ? parseConstitution(constitution) : [];
   const context = loadChangeContext(projectRoot, changeName);

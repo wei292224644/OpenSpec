@@ -12,6 +12,7 @@ export function createConstitutionSkeletonIfMissing(
   const content = bundle.template
     .replace(/<project-name>/g, projectName)
     .replace('YYYY-MM-DD', new Date().toISOString().slice(0, 10));
+  fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, content, 'utf-8');
   return 'created';
 }
