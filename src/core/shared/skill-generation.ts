@@ -18,6 +18,7 @@ import {
   getOpsxProposeSkillTemplate,
   getConstitutionSkillTemplate,
   getAnalyzeChangeSkillTemplate,
+  getProbeSkillTemplate,
   getOpsxExploreCommandTemplate,
   getOpsxNewCommandTemplate,
   getOpsxContinueCommandTemplate,
@@ -31,6 +32,7 @@ import {
   getOpsxProposeCommandTemplate,
   getOpsxConstitutionCommandTemplate,
   getOpsxAnalyzeCommandTemplate,
+  getOpsxProbeCommandTemplate,
   type SkillTemplate,
 } from '../templates/skill-templates.js';
 import type { CommandContent } from '../command-generation/index.js';
@@ -72,6 +74,7 @@ export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemp
     { template: getOpsxProposeSkillTemplate(), dirName: 'openspec-propose', workflowId: 'propose' },
     { template: getConstitutionSkillTemplate(), dirName: 'openspec-constitution', workflowId: 'constitution' },
     { template: getAnalyzeChangeSkillTemplate(), dirName: 'openspec-analyze-change', workflowId: 'analyze' },
+    { template: getProbeSkillTemplate(), dirName: 'openspec-probe', workflowId: 'probe' },
   ];
 
   if (!workflowFilter) return all;
@@ -100,6 +103,7 @@ export function getCommandTemplates(workflowFilter?: readonly string[]): Command
     { template: getOpsxProposeCommandTemplate(), id: 'propose' },
     { template: getOpsxConstitutionCommandTemplate(), id: 'constitution' },
     { template: getOpsxAnalyzeCommandTemplate(), id: 'analyze' },
+    { template: getOpsxProbeCommandTemplate(), id: 'probe' },
   ];
 
   if (!workflowFilter) return all;
