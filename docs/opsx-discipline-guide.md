@@ -5,6 +5,58 @@
 
 ---
 
+## 安装与启用
+
+OpenSpec 是一个 CLI（包名 `@fission-ai/openspec`，命令 `openspec`）。`/opsx:*` 不是内置的——它们是 `openspec init` 按你选的 AI 工具**生成**到项目里的 skill/命令文件。
+
+> ⚠️ 前提：本文这三套机制（probe / constitution+analyze / apply-TDD）是在**本仓库**开发的，npm 上已发布的版本不一定包含。**想现在就用，请用下面的「本仓库构建」路径**；npm 安装要等包含这些功能的版本发布后才有。
+
+### 路径 A：从本仓库构建（拿到最新功能，推荐用于自测）
+```bash
+# 在 OpenSpec 仓库根目录
+pnpm install
+pnpm build
+npm link          # 把全局 `openspec` 指向这份构建
+
+# 验证指到的是本地构建
+openspec --version
+which openspec
+```
+> 不想污染全局，也可以不 `npm link`，直接用绝对路径调用：`node /path/to/OpenSpec/bin/openspec.js <cmd>`。
+
+### 路径 B：从 npm 安装（功能发布后的常规方式）
+```bash
+npm i -g @fission-ai/openspec     # 或 pnpm add -g / npx @fission-ai/openspec
+```
+
+### 在你的项目里启用
+进入**你要使用 OpenSpec 的项目**（不是 OpenSpec 仓库本身），初始化并选择 AI 工具：
+```bash
+cd /path/to/your-project
+openspec init --tools claude          # 也可: cursor / codex / windsurf / gemini ... 或 "all"
+# 多个工具用逗号: openspec init --tools claude,cursor,codex
+```
+这会创建 `openspec/`（含 `config.yaml`、`specs/`、`changes/`）并把 `/opsx:*` 命令/skill 写进所选工具的目录（如 Claude Code 的 skills、Cursor 的 commands）。
+
+支持的工具（`--tools` 取值）：`amazon-q, antigravity, auggie, bob, claude, cline, codex, forgecode, codebuddy, continue, costrict, crush, cursor, factory, gemini, github-copilot, iflow, junie, kilocode, kimi, kiro, lingma, vibe, opencode, pi, qoder, qwen, roocode, trae, windsurf`。
+
+### 已有项目升级（拿到新的 opsx 命令）
+如果项目早就 init 过，CLI 升级后用 `update` 重新生成命令文件：
+```bash
+cd /path/to/your-project
+openspec update
+```
+
+### 启用本文三套机制
+- **apply-TDD**：编辑 `openspec/config.yaml`，加一行 `tddMode: default`（或 `strict` / `off`）。即时生效，无需重启。
+- **constitution + analyze**：在项目里跑 `/opsx:constitution` 起草 `openspec/constitution.md`；之后 `/opsx:analyze <change>` 即可审查。
+- **probe**：直接 `/opsx:probe <change>`，无需额外配置。
+
+### 跨工具用法（Claude Code 出方案 → Codex/Cursor 写码）
+对同一个项目 `openspec init --tools claude,codex,cursor` 一次，三个工具就都有 `/opsx:*` 了。接力靠文件（`openspec/changes/<name>/` + `tasks.md` + `config.yaml`）+ CLI 的 JSON，不靠对话记忆。切换工具前 commit/同步即可。
+
+---
+
 ## 0. 它们在工作流的哪个位置
 
 OpenSpec 的一次变更（change）走这条链。新机制用 ★ 标出：
