@@ -34,11 +34,18 @@ When ready to implement, run /opsx:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
+2. **Create or reuse the change directory**
    \`\`\`bash
    openspec new change "<name>"
    \`\`\`
    This creates a scaffolded change in the planning home resolved by the CLI with \`.openspec.yaml\`.
+   If the change already exists (e.g. \`/opsx:probe\` scaffolded it), reuse it instead of recreating.
+
+2b. **Check for a probe report**
+   Run \`openspec status --change "<name>" --json\` and look for \`<changeRoot>/probe-report.md\`.
+   - **If absent**: print one line and continue (momentum is NOT affected):
+     > No probe-report.md found. For deeper design alignment you can run \`/opsx:probe <name>\` first.
+   - **If present**: read it fully. Treat its "Confirmed decisions" as explicit input for every artifact. You MUST copy each \`[ASSUMED]\` open assumption verbatim into proposal.md's \`## Open Assumptions\` section. Never silently absorb an assumption — assumptions stay visible to the user.
 
 3. **Get the artifact build order**
    \`\`\`bash
@@ -103,6 +110,7 @@ After completing all artifacts, summarize:
 - **IMPORTANT**: \`context\` and \`rules\` are constraints for YOU, not content for the file
   - Do NOT copy \`<context>\`, \`<rules>\`, \`<project_context>\` blocks into the artifact
   - These guide what you write, but should never appear in the output
+- If a probe-report.md exists, proposal.md MUST contain a \`## Open Assumptions\` section listing every \`[ASSUMED]\` item from the report. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
 
 **Guardrails**
 - Create ALL artifacts needed for implementation (as defined by schema's \`apply.requires\`)
@@ -146,11 +154,18 @@ When ready to implement, run /opsx:apply
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
+2. **Create or reuse the change directory**
    \`\`\`bash
    openspec new change "<name>"
    \`\`\`
    This creates a scaffolded change in the planning home resolved by the CLI with \`.openspec.yaml\`.
+   If the change already exists (e.g. \`/opsx:probe\` scaffolded it), reuse it instead of recreating.
+
+2b. **Check for a probe report**
+   Run \`openspec status --change "<name>" --json\` and look for \`<changeRoot>/probe-report.md\`.
+   - **If absent**: print one line and continue (momentum is NOT affected):
+     > No probe-report.md found. For deeper design alignment you can run \`/opsx:probe <name>\` first.
+   - **If present**: read it fully. Treat its "Confirmed decisions" as explicit input for every artifact. You MUST copy each \`[ASSUMED]\` open assumption verbatim into proposal.md's \`## Open Assumptions\` section. Never silently absorb an assumption — assumptions stay visible to the user.
 
 3. **Get the artifact build order**
    \`\`\`bash
@@ -215,6 +230,7 @@ After completing all artifacts, summarize:
 - **IMPORTANT**: \`context\` and \`rules\` are constraints for YOU, not content for the file
   - Do NOT copy \`<context>\`, \`<rules>\`, \`<project_context>\` blocks into the artifact
   - These guide what you write, but should never appear in the output
+- If a probe-report.md exists, proposal.md MUST contain a \`## Open Assumptions\` section listing every \`[ASSUMED]\` item from the report. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
 
 **Guardrails**
 - Create ALL artifacts needed for implementation (as defined by schema's \`apply.requires\`)
