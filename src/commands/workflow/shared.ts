@@ -37,6 +37,8 @@ export interface ApplyInstructions {
   state: 'blocked' | 'all_done' | 'ready';
   missingArtifacts?: string[];
   instruction: string;
+  /** TDD discipline level for this apply session. Defaults to 'default' if not in config. */
+  tddMode: 'strict' | 'default' | 'off';
 }
 
 // -----------------------------------------------------------------------------

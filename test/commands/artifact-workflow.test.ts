@@ -767,6 +767,55 @@ artifacts:
       expect(json.state).toBe('ready');
       expect(json.instruction).toContain('All required artifacts complete');
     });
+
+    it('includes tddMode: strict in apply instructions JSON when set in config.yaml', async () => {
+      await createTestChange('tdd-strict', ['proposal', 'design', 'specs', 'tasks']);
+      await fs.mkdir(path.join(tempDir, 'openspec'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, 'openspec', 'config.yaml'),
+        'schema: spec-driven\ntddMode: strict\n'
+      );
+
+      const result = await runCLI(
+        ['instructions', 'apply', '--change', 'tdd-strict', '--json'],
+        { cwd: tempDir }
+      );
+
+      expect(result.exitCode).toBe(0);
+      const json = JSON.parse(result.stdout);
+      expect(json.tddMode).toBe('strict');
+    });
+
+    it('defaults tddMode to "default" in apply instructions JSON when not set', async () => {
+      await createTestChange('tdd-default', ['proposal', 'design', 'specs', 'tasks']);
+
+      const result = await runCLI(
+        ['instructions', 'apply', '--change', 'tdd-default', '--json'],
+        { cwd: tempDir }
+      );
+
+      expect(result.exitCode).toBe(0);
+      const json = JSON.parse(result.stdout);
+      expect(json.tddMode).toBe('default');
+    });
+
+    it('includes tddMode: off in apply instructions JSON when set in config.yaml', async () => {
+      await createTestChange('tdd-off', ['proposal', 'design', 'specs', 'tasks']);
+      await fs.mkdir(path.join(tempDir, 'openspec'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, 'openspec', 'config.yaml'),
+        'schema: spec-driven\ntddMode: off\n'
+      );
+
+      const result = await runCLI(
+        ['instructions', 'apply', '--change', 'tdd-off', '--json'],
+        { cwd: tempDir }
+      );
+
+      expect(result.exitCode).toBe(0);
+      const json = JSON.parse(result.stdout);
+      expect(json.tddMode).toBe('off');
+    });
   });
 
   describe('help text', () => {

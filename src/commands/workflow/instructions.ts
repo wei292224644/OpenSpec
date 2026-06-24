@@ -16,6 +16,7 @@ import {
   type ArtifactInstructions,
 } from '../../core/artifact-graph/index.js';
 import { getChangeDir, resolveCurrentPlanningHomeSync } from '../../core/planning-home.js';
+import { readProjectConfig } from '../../core/project-config.js';
 import {
   validateChangeExists,
   validateSchemaExists,
@@ -285,6 +286,10 @@ export async function generateApplyInstructions(
   const schema = resolveSchema(context.schemaName, projectRoot);
   const applyConfig = schema.apply;
 
+  // Read tddMode from project config (default: 'default')
+  const projectConfig = readProjectConfig(projectRoot);
+  const tddMode = projectConfig?.tddMode ?? 'default';
+
   // Determine required artifacts and tracking file from schema
   // Fallback: if no apply block, require all artifacts
   const requiredArtifactIds = applyConfig?.requires ?? schema.artifacts.map((a) => a.id);
@@ -366,6 +371,7 @@ export async function generateApplyInstructions(
     state,
     missingArtifacts: missingArtifacts.length > 0 ? missingArtifacts : undefined,
     instruction,
+    tddMode,
   };
 }
 
@@ -409,10 +415,11 @@ export async function applyInstructionsCommand(options: ApplyInstructionsOptions
 }
 
 export function printApplyInstructionsText(instructions: ApplyInstructions): void {
-  const { changeName, schemaName, initiative, contextFiles, progress, tasks, state, missingArtifacts, instruction } = instructions;
+  const { changeName, schemaName, initiative, contextFiles, progress, tasks, state, missingArtifacts, instruction, tddMode } = instructions;
 
   console.log(`## Apply: ${changeName}`);
   console.log(`Schema: ${schemaName}`);
+  console.log(`TDD Mode: ${tddMode}`);
   if (initiative) {
     console.log(`Initiative: ${initiative.store}/${initiative.id}`);
   }
