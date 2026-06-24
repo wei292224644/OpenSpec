@@ -23,6 +23,9 @@ export const WORKFLOW_TO_SKILL_DIR: Record<WorkflowId, string> = {
   'verify': 'openspec-verify-change',
   'onboard': 'openspec-onboard',
   'propose': 'openspec-propose',
+  'probe': 'openspec-probe',
+  'constitution': 'openspec-constitution',
+  'analyze': 'openspec-analyze-change',
 };
 
 function toKnownWorkflows(workflows: readonly string[]): WorkflowId[] {
