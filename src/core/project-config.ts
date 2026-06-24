@@ -38,6 +38,12 @@ export const ProjectConfigSchema = z.object({
     )
     .optional()
     .describe('Per-artifact rules, keyed by artifact ID'),
+
+  // TDD discipline level for the apply phase
+  tddMode: z
+    .enum(['strict', 'default', 'off'])
+    .optional()
+    .describe("TDD discipline level: 'strict' | 'default' | 'off'"),
 });
 
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
@@ -149,6 +155,19 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
         }
       } else {
         console.warn(`Invalid 'rules' field in config (must be object)`);
+      }
+    }
+
+    // Parse tddMode field
+    if (raw.tddMode !== undefined) {
+      const tddModeField = z.enum(['strict', 'default', 'off']);
+      const tddResult = tddModeField.safeParse(raw.tddMode);
+      if (tddResult.success) {
+        config.tddMode = tddResult.data;
+      } else {
+        console.warn(
+          `Invalid 'tddMode' in config (must be 'strict', 'default', or 'off'), ignoring`
+        );
       }
     }
 

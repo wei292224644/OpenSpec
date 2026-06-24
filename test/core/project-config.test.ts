@@ -480,6 +480,80 @@ rules:
         ]);
       });
     });
+
+    describe('tddMode field', () => {
+      it('should parse tddMode: strict', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ntddMode: strict\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.tddMode).toBe('strict');
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('should parse tddMode: default', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ntddMode: default\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.tddMode).toBe('default');
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('should parse tddMode: off', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ntddMode: off\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.tddMode).toBe('off');
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('should warn and omit tddMode when value is invalid', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ntddMode: aggressive\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.tddMode).toBeUndefined();
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('tddMode')
+        );
+      });
+
+      it('should be omitted (not present) when not set in config', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect('tddMode' in (config ?? {})).toBe(false);
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('validateConfigRules', () => {
