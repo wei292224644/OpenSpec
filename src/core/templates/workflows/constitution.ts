@@ -25,13 +25,13 @@ export function getConstitutionSkillTemplate(): SkillTemplate {
 3. **Interactive grilling (one principle at a time)**
    For each principle ask:
    > "If someone violated this, what would analyze look at in proposal/design/specs to find it?"
-   - Untestable goal → push for 判据 + [structure] or [judgment]
+   - Untestable goal → push for a CRITERION[structure] or CRITERION[judgment] line
    - Code-only rule → redirect to linter/CI
    - Vague wording → rewrite with MUST/SHOULD or downgrade to config rules
 
 4. **Write openspec/constitution.md**
    - Roman numeral ids + (MUST)/(SHOULD)
-   - Each clause: ≥1 判据 with 正例/反例
+   - Each clause: ≥1 CRITERION line with PASS/FAIL examples
    - One topic per clause
    - Light version stamp: \`> Version: X.Y · Last amended: YYYY-MM-DD\`
 

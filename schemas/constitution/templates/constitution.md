@@ -6,14 +6,14 @@
 
 <One plan-level principle using MUST/MUST NOT/SHOULD keywords.>
 
-- 判据[structure]: <measurable structural check against artifacts>
-  正例: <good example>
-  反例: <bad example>
+- CRITERION[structure]: <measurable structural check against artifacts>
+  PASS: <good example>
+  FAIL: <bad example>
 
 ## II. <Principle Title> (SHOULD)
 
 <Second principle — one topic per clause.>
 
-- 判据[judgment]: <yes/no question per requirement or design section>
-  正例: <good example>
-  反例: <bad example>
+- CRITERION[judgment]: <yes/no question per requirement or design section>
+  PASS: <good example>
+  FAIL: <bad example>

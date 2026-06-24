@@ -22,8 +22,8 @@ export function getAnalyzeChangeSkillTemplate(): SkillTemplate {
 2. **Read artifact contents** for each artifacts[].path where exists is true.
 
 3. **Pass: Constitution Alignment** — iterate clauses[] (already parsed; do not re-parse):
-   - structure 判据: check artifact structure mechanically against the criterion
-   - judgment 判据: evaluate itemized yes/no per requirement (anchor to ### Requirement: IDs)
+   - structure criterion: check artifact structure mechanically against the criterion
+   - judgment criterion: evaluate itemized yes/no per requirement (anchor to ### Requirement: IDs)
    - MUST violation + no matching waiver → CRITICAL with evidence: file + requirement ID + criterion
    - MUST violation + waiver where principle === clause.id → NOTE: "⚠ Waived <id> — reason: <reason>"
    - judgment without concrete evidence → downgrade to WARNING (never CRITICAL)
@@ -34,9 +34,30 @@ export function getAnalyzeChangeSkillTemplate(): SkillTemplate {
    - proposal Capabilities vs specs files
    - design Decisions vs specs scope
 
-5. **Report**
-   | ID | Category | Severity | Location | Evidence | Recommendation |
-   Advisory-block apply if any CRITICAL unless user explicitly accepts risk (still list CRITICALs).
+5. **Report** — write for a human reader; there is NO downstream machine consumer of this report, so optimize for reading, not for parsing. Conclusion first, then triage. Output in this exact order:
+
+   **(a) Verdict banner** — one line, the answer up front:
+   - any CRITICAL → \`⛔ Do not apply — N CRITICAL issue(s) to resolve\`
+   - else if any WARNING → \`⚠️ OK to apply — N warning(s) worth a look first\`
+   - else → \`✅ OK to apply\`
+
+   **(b) One-paragraph summary** — 2–3 plain-language sentences: what blocks apply, what's minor, what was waived. No jargon, no IDs.
+
+   **(c) Coverage bar** — render requirement→task coverage as a 10-cell ASCII bar (█ = covered, ░ = uncovered) plus the fraction:
+   \`Coverage  ████████░░ 80%  (8/10 have tasks)\`
+
+   **(d) 🔴 Must fix (CRITICALs)** — numbered, one finding each:
+   \`\`\`
+   1. <one-line problem> → violates <constitution clause / consistency rule>
+      Location  <file › Requirement: id>
+      Fix       <concrete action>
+   \`\`\`
+
+   **(e) 🟡 Should fix (WARNINGs)** — same shape, but collapsed: print the count and a \`‹expand N›\` hint instead of the bodies. Expand inline only if there are ≤2, or when the user asks.
+
+   **(f) Waived (NOTEs)** — only if present, one line each: \`⚠ <id> — <reason>\`.
+
+   **Advisory-block**: if any CRITICAL, do NOT proceed to apply — say so in the verdict and stop. Continue only if the user explicitly accepts the risk (and still list every CRITICAL).
 
 **Do NOT**: read implementation code, modify constitution, modify artifacts, or conflate with verify.`,
     license: 'MIT',

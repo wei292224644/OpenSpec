@@ -14,7 +14,7 @@ describe('analyzeInstructionsCommand', () => {
     fs.writeFileSync(path.join(openspecDir, 'config.yaml'), 'schema: spec-driven\n');
     fs.writeFileSync(
       path.join(openspecDir, 'constitution.md'),
-      '## I. 产品行为语言 (MUST)\nspec MUST ...\n- 判据[judgment]: 每条 requirement 是可观察结果\n'
+      '## I. Product Behavior Language (MUST)\nspec MUST ...\n- CRITERION[judgment]: each requirement is an observable outcome\n'
     );
     const changeDir = path.join(openspecDir, 'changes', 'demo');
     fs.mkdirSync(changeDir, { recursive: true });

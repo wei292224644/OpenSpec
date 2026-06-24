@@ -14,9 +14,11 @@ export interface ConstitutionClause {
 }
 
 const HEADING = /^##\s+([IVX]+)\.\s+(.+?)\s+\((MUST|SHOULD)\)\s*$/u;
-const CRITERION = /^-\s*判据\[(structure|judgment)\]:\s*(.+)$/u;
-const POSITIVE = /^正例[:：]\s*(.+)$/u;
-const NEGATIVE = /^反例[:：]\s*(.+)$/u;
+// Keywords are written uppercase (CRITERION/PASS/FAIL) by the constitution
+// template; the `i` flag tolerates a human edit that lowercases them.
+const CRITERION = /^-\s*criterion\[(structure|judgment)\]:\s*(.+)$/iu;
+const POSITIVE = /^pass:\s*(.+)$/iu;
+const NEGATIVE = /^fail:\s*(.+)$/iu;
 
 export function parseConstitution(content: string): ConstitutionClause[] {
   const lines = content.split('\n');
@@ -43,7 +45,7 @@ export function parseConstitution(content: string): ConstitutionClause[] {
     const trimmed = line.trim();
     const c = CRITERION.exec(trimmed);
     if (c) {
-      currentCriterion = { type: c[1] as 'structure' | 'judgment', text: c[2].trim() };
+      currentCriterion = { type: c[1].toLowerCase() as 'structure' | 'judgment', text: c[2].trim() };
       current.criteria.push(currentCriterion);
       continue;
     }

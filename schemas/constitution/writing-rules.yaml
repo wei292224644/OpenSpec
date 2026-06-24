@@ -1,7 +1,7 @@
 rules:
   - "Each clause MUST have Roman numeral id + title + level (MUST) or (SHOULD)"
   - "Use normative keywords MUST, MUST NOT, SHOULD — reject vague 'should try' or 'prefer'"
-  - "Each clause MUST have at least one 判据 with type [structure] or [judgment]"
+  - "Each clause MUST have at least one CRITERION[structure] or CRITERION[judgment] line"
   - "judgment criteria MUST be itemized yes/no questions, not blanket labels"
   - "One principle per clause — do not combine unrelated rules"
   - "Only plan-level principles — rules requiring code inspection belong in linter/CI"
