@@ -10,7 +10,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-apply-change',
     description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.',
-    instructions: `Implement tasks from an OpenSpec change.
+    instructions: `Implement tasks from an OpenSpec change with TDD discipline.
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -42,6 +42,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
    This returns:
    - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - \`tddMode\`: TDD discipline level — \`"strict"\` | \`"default"\` | \`"off"\`
    - Progress (total, complete, remaining)
    - Task list with status
    - Dynamic instruction based on current state
@@ -64,18 +65,41 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
    Display:
    - Schema being used
+   - TDD Mode: \`<tddMode>\`
    - Progress: "N/M tasks complete"
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+6. **Implement tasks with TDD discipline (loop until done or blocked)**
 
-   For each pending task:
-   - Show which task is being worked on
-   - Make the code changes required
-   - Keep changes minimal and focused
-   - Mark task complete in the tasks file: \`- [ ]\` → \`- [x]\`
-   - Continue to next task
+   **Interpret \`tddMode\`:**
+   - \`"default"\`: closing tasks require their scenarios green; intermediate/non-scenario tasks need only code complete
+   - \`"strict"\`: same as default, plus every delta scenario must be covered by a green test before the change is done
+   - \`"off"\`: no test gates (document/spike projects)
+
+   **Test runner detection (run once before the loop):**
+   Check whether a test runner is available by looking for one of:
+   - \`vitest.config.ts\` / \`vitest.config.js\`
+   - \`jest.config.ts\` / \`jest.config.js\` / \`jest.config.mjs\`
+   - \`mocha.opts\` / \`.mocharc.*\`
+   - A \`"test"\` script in \`package.json\`
+   If none found, announce: "No test runner detected — tddMode degraded to 'off'" and proceed without test gates for this session.
+
+   **For each pending task:**
+
+   1. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
+   2. **Write failing tests** for any scenario that has no existing test yet:
+      - Translate the scenario's WHEN/THEN/AND into a test assertion
+      - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
+   3. **Write the minimal implementation** required to make the related tests pass
+   4. **Run related tests**: confirm they are GREEN
+   5. **(Optional) Refactor** while keeping all previously-green tests green
+   6. **Mark task complete** using this rule:
+      - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
+      - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
+      - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
+
+   **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
    **Pause if:**
    - Task is unclear → ask for clarification
@@ -88,20 +112,28 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
-   - If all done: suggest archive
+   - Test suite results (run the full test suite and report actual output)
+   - **Change-level coverage gate** (depends on \`tddMode\`):
+     - \`"default"\`: every scenario that **has** a test must be GREEN. Scenarios with **no** test → list them as a warning (does NOT block reporting all-done).
+     - \`"strict"\`: **every** delta scenario must have a GREEN test. If any delta scenario lacks a test, or has a RED test → **STOP. Do NOT report all-done and do NOT suggest archive.** List the uncovered/red scenarios and ask the user to add tests or record a waiver. The \`no-test\` escape is closed in strict mode.
+     - \`"off"\`: skip this gate entirely.
+   - If all done (and the coverage gate above passes): suggest archive
    - If paused: explain why and wait for guidance
 
 **Output During Implementation**
 
 \`\`\`
-## Implementing: <change-name> (schema: <schema-name>)
+## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>)
 
 Working on task 3/7: <task description>
-[...implementation happening...]
+  Scenarios: <scenario names this task advances>
+  Writing test for: <scenario name> → RED
+  Implementing...
+  Tests: GREEN
 ✓ Task complete
 
 Working on task 4/7: <task description>
-[...implementation happening...]
+  (No scenario closed by this task — marking done on code complete)
 ✓ Task complete
 \`\`\`
 
@@ -112,12 +144,16 @@ Working on task 4/7: <task description>
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Progress:** 7/7 tasks complete ✓
+**TDD Mode:** <tddMode>
+**Progress:** N/M tasks complete
 
 ### Completed This Session
 - [x] Task 1
 - [x] Task 2
 ...
+
+### Test Results
+<paste actual test runner output here>
 
 All tasks complete! Ready to archive this change.
 \`\`\`
@@ -129,6 +165,7 @@ All tasks complete! Ready to archive this change.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
+**TDD Mode:** <tddMode>
 **Progress:** 4/7 tasks complete
 
 ### Issue Encountered
@@ -145,19 +182,26 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
+- Read \`tddMode\` from apply instructions JSON before the loop; respect it throughout
+- Test runner detection: degrade to \`tddMode: "off"\` if no runner found, announce it
+- For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
+- For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete
+- For tasks with no scenario: no test required — mark done when code is complete
+- Change-level gate (\`default\`): a covered scenario may not stay RED at close; uncovered scenarios warn but do not block
+- Change-level gate (\`strict\`): every delta scenario must have a GREEN test — if any is missing or RED, STOP, do not report all-done, do not suggest archive; \`no-test\` escape requires a recorded waiver
+- Completion output MUST include actual test runner output, not a hardcoded claim
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task
-- Update task checkbox immediately after completing each task
-- Pause on errors, blockers, or unclear requirements - don't guess
-- Use contextFiles from CLI output, don't assume specific file names
+- Pause on errors, blockers, or unclear requirements — do not guess
+- Use contextFiles from CLI output, do not assume specific file names
 
 **Fluid Workflow Integration**
 
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`,
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts — not phase-locked, work fluidly`,
     license: 'MIT',
     compatibility: 'Requires openspec CLI.',
     metadata: { author: 'openspec', version: '1.0' },
@@ -170,7 +214,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
     description: 'Implement tasks from an OpenSpec change (Experimental)',
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
-    content: `Implement tasks from an OpenSpec change.
+    content: `Implement tasks from an OpenSpec change with TDD discipline.
 
 **Input**: Optionally specify a change name (e.g., \`/opsx:apply add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -202,6 +246,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
    This returns:
    - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema)
+   - \`tddMode\`: TDD discipline level — \`"strict"\` | \`"default"\` | \`"off"\`
    - Progress (total, complete, remaining)
    - Task list with status
    - Dynamic instruction based on current state
@@ -224,18 +269,41 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
    Display:
    - Schema being used
+   - TDD Mode: \`<tddMode>\`
    - Progress: "N/M tasks complete"
    - Remaining tasks overview
    - Dynamic instruction from CLI
 
-6. **Implement tasks (loop until done or blocked)**
+6. **Implement tasks with TDD discipline (loop until done or blocked)**
 
-   For each pending task:
-   - Show which task is being worked on
-   - Make the code changes required
-   - Keep changes minimal and focused
-   - Mark task complete in the tasks file: \`- [ ]\` → \`- [x]\`
-   - Continue to next task
+   **Interpret \`tddMode\`:**
+   - \`"default"\`: closing tasks require their scenarios green; intermediate/non-scenario tasks need only code complete
+   - \`"strict"\`: same as default, plus every delta scenario must be covered by a green test before the change is done
+   - \`"off"\`: no test gates (document/spike projects)
+
+   **Test runner detection (run once before the loop):**
+   Check whether a test runner is available by looking for one of:
+   - \`vitest.config.ts\` / \`vitest.config.js\`
+   - \`jest.config.ts\` / \`jest.config.js\` / \`jest.config.mjs\`
+   - \`mocha.opts\` / \`.mocharc.*\`
+   - A \`"test"\` script in \`package.json\`
+   If none found, announce: "No test runner detected — tddMode degraded to 'off'" and proceed without test gates for this session.
+
+   **For each pending task:**
+
+   1. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
+   2. **Write failing tests** for any scenario that has no existing test yet:
+      - Translate the scenario's WHEN/THEN/AND into a test assertion
+      - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
+   3. **Write the minimal implementation** required to make the related tests pass
+   4. **Run related tests**: confirm they are GREEN
+   5. **(Optional) Refactor** while keeping all previously-green tests green
+   6. **Mark task complete** using this rule:
+      - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
+      - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
+      - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
+
+   **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
    **Pause if:**
    - Task is unclear → ask for clarification
@@ -248,20 +316,28 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
-   - If all done: suggest archive
+   - Test suite results (run the full test suite and report actual output)
+   - **Change-level coverage gate** (depends on \`tddMode\`):
+     - \`"default"\`: every scenario that **has** a test must be GREEN. Scenarios with **no** test → list them as a warning (does NOT block reporting all-done).
+     - \`"strict"\`: **every** delta scenario must have a GREEN test. If any delta scenario lacks a test, or has a RED test → **STOP. Do NOT report all-done and do NOT suggest archive.** List the uncovered/red scenarios and ask the user to add tests or record a waiver.
+     - \`"off"\`: skip this gate entirely.
+   - If all done (and the coverage gate passes): suggest archive with \`/opsx:archive\`
    - If paused: explain why and wait for guidance
 
 **Output During Implementation**
 
 \`\`\`
-## Implementing: <change-name> (schema: <schema-name>)
+## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>)
 
 Working on task 3/7: <task description>
-[...implementation happening...]
+  Scenarios: <scenario names this task advances>
+  Writing test for: <scenario name> → RED
+  Implementing...
+  Tests: GREEN
 ✓ Task complete
 
 Working on task 4/7: <task description>
-[...implementation happening...]
+  (No scenario closed by this task — marking done on code complete)
 ✓ Task complete
 \`\`\`
 
@@ -272,12 +348,16 @@ Working on task 4/7: <task description>
 
 **Change:** <change-name>
 **Schema:** <schema-name>
-**Progress:** 7/7 tasks complete ✓
+**TDD Mode:** <tddMode>
+**Progress:** N/M tasks complete
 
 ### Completed This Session
 - [x] Task 1
 - [x] Task 2
 ...
+
+### Test Results
+<paste actual test runner output here>
 
 All tasks complete! You can archive this change with \`/opsx:archive\`.
 \`\`\`
@@ -289,6 +369,7 @@ All tasks complete! You can archive this change with \`/opsx:archive\`.
 
 **Change:** <change-name>
 **Schema:** <schema-name>
+**TDD Mode:** <tddMode>
 **Progress:** 4/7 tasks complete
 
 ### Issue Encountered
@@ -305,18 +386,25 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
+- Read \`tddMode\` from apply instructions JSON before the loop; respect it throughout
+- Test runner detection: degrade to \`tddMode: "off"\` if no runner found, announce it
+- For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
+- For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete
+- For tasks with no scenario: no test required — mark done when code is complete
+- Change-level gate (\`default\`): a covered scenario may not stay RED at close; uncovered scenarios warn but do not block
+- Change-level gate (\`strict\`): every delta scenario must have a GREEN test — if any is missing or RED, STOP, do not report all-done, do not suggest archive
+- Completion output MUST include actual test runner output, not a hardcoded claim
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task
-- Update task checkbox immediately after completing each task
-- Pause on errors, blockers, or unclear requirements - don't guess
-- Use contextFiles from CLI output, don't assume specific file names
+- Pause on errors, blockers, or unclear requirements — do not guess
+- Use contextFiles from CLI output, do not assume specific file names
 
 **Fluid Workflow Integration**
 
 This skill supports the "actions on a change" model:
 
 - **Can be invoked anytime**: Before all artifacts are done (if tasks exist), after partial implementation, interleaved with other actions
-- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts - not phase-locked, work fluidly`
+- **Allows artifact updates**: If implementation reveals design issues, suggest updating artifacts — not phase-locked, work fluidly`
   };
 }
