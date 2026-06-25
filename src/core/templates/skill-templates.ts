@@ -21,3 +21,4 @@ export { getFeedbackSkillTemplate } from './workflows/feedback.js';
 export { getConstitutionSkillTemplate, getOpsxConstitutionCommandTemplate } from './workflows/constitution.js';
 export { getAnalyzeChangeSkillTemplate, getOpsxAnalyzeCommandTemplate } from './workflows/analyze.js';
 export { getProbeSkillTemplate, getOpsxProbeCommandTemplate } from './workflows/probe.js';
+export { getHandoffSkillTemplate, getOpsxHandoffCommandTemplate } from './workflows/handoff.js';

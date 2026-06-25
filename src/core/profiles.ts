@@ -20,6 +20,7 @@ export const CORE_WORKFLOWS = [
   'probe',
   'constitution',
   'analyze',
+  'handoff',
 ] as const;
 
 /**
@@ -40,6 +41,7 @@ export const ALL_WORKFLOWS = [
   'probe',
   'constitution',
   'analyze',
+  'handoff',
 ] as const;
 
 export type WorkflowId = (typeof ALL_WORKFLOWS)[number];

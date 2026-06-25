@@ -19,6 +19,7 @@ import {
   getConstitutionSkillTemplate,
   getAnalyzeChangeSkillTemplate,
   getProbeSkillTemplate,
+  getHandoffSkillTemplate,
   getOpsxExploreCommandTemplate,
   getOpsxNewCommandTemplate,
   getOpsxContinueCommandTemplate,
@@ -33,6 +34,7 @@ import {
   getOpsxConstitutionCommandTemplate,
   getOpsxAnalyzeCommandTemplate,
   getOpsxProbeCommandTemplate,
+  getOpsxHandoffCommandTemplate,
   type SkillTemplate,
 } from '../templates/skill-templates.js';
 import type { CommandContent } from '../command-generation/index.js';
@@ -75,6 +77,7 @@ export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemp
     { template: getConstitutionSkillTemplate(), dirName: 'openspec-constitution', workflowId: 'constitution' },
     { template: getAnalyzeChangeSkillTemplate(), dirName: 'openspec-analyze-change', workflowId: 'analyze' },
     { template: getProbeSkillTemplate(), dirName: 'openspec-probe', workflowId: 'probe' },
+    { template: getHandoffSkillTemplate(), dirName: 'openspec-handoff', workflowId: 'handoff' },
   ];
 
   if (!workflowFilter) return all;
@@ -104,6 +107,7 @@ export function getCommandTemplates(workflowFilter?: readonly string[]): Command
     { template: getOpsxConstitutionCommandTemplate(), id: 'constitution' },
     { template: getOpsxAnalyzeCommandTemplate(), id: 'analyze' },
     { template: getOpsxProbeCommandTemplate(), id: 'probe' },
+    { template: getOpsxHandoffCommandTemplate(), id: 'handoff' },
   ];
 
   if (!workflowFilter) return all;
