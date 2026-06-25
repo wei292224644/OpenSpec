@@ -37,6 +37,8 @@ Our philosophy:
 > **New workflow now available!** We've rebuilt OpenSpec with a new artifact-guided workflow.
 >
 > Run `/opsx:propose "your idea"` to get started. → [Learn more here](docs/opsx.md)
+>
+> **New discipline tools:** `/opsx:probe` (pre-propose grilling), `/opsx:constitution` (project invariants), `/opsx:analyze` (pre-apply audit). → [Discipline guide](docs/opsx-discipline-guide.md)
 
 <p align="center">
   Follow <a href="https://x.com/0xTab">@0xTab on X</a> for updates · Join the <a href="https://discord.gg/YctCnvvshC">OpenSpec Discord</a> for help and questions.
@@ -56,17 +58,60 @@ AI:  Created openspec/changes/add-dark-mode/
      Ready for implementation!
 
 You: /opsx:apply
-AI:  Implementing tasks...
-     ✓ 1.1 Add theme context provider
-     ✓ 1.2 Create toggle component
-     ✓ 2.1 Add CSS variables
-     ✓ 2.2 Wire up localStorage
-     All tasks complete!
+AI:  Using change: add-dark-mode (schema: spec-driven, tddMode: default)
+     Tasks (4 pending):
+     ○ 1.1 Add theme context provider
+     ○ 1.2 Create toggle component
+     ○ 2.1 Add CSS variables
+     ○ 2.2 Wire up localStorage
+
+     ● 1.1 Add theme context provider → writing test (RED) → GREEN ✓
+     ● 1.2 Create toggle component    → writing test (RED) → GREEN ✓
+     ● 2.1 Add CSS variables          → no scenario closed, code complete ✓
+     ● 2.2 Wire up localStorage       → writing test (RED) → GREEN ✓
+     All tasks complete! (4/4)
 
 You: /opsx:archive
 AI:  Archived to openspec/changes/archive/2025-01-23-add-dark-mode/
      Specs updated. Ready for the next feature.
 ```
+
+<details>
+<summary><strong>Optional discipline tools</strong></summary>
+
+Add any of these before or around the core flow to raise alignment and correctness:
+
+```text
+You: /opsx:probe add-dark-mode
+AI:  (grilling — one question at a time, depth-first, evidence-backed)
+     L1 Scope: what problem, why now, what's out of scope?
+     L2 Impact: which specs touched, which modules, what depends on this?
+     ...
+     L6 Open assumptions: [ASSUMED] CSS variable naming not confirmed
+     Report: openspec/changes/add-dark-mode/probe-report.md
+     Next: /opsx:propose add-dark-mode — it will read this report.
+
+You: /opsx:constitution
+AI:  Reviewing config for plan-level MUST/SHOULD candidates...
+     [constitution] "Requirements MUST describe observable behavior" → clause I
+     [linter] "Always use path.join()" → ESLint rule, skip
+     Wrote: openspec/constitution.md
+
+You: /opsx:analyze add-dark-mode
+AI:  Constitution Alignment — 2 clauses, 0 waivers
+     ✓ I. Product behavior language (MUST) — all requirements pass
+     ✓ II. Simplicity first (SHOULD) — design stays minimal
+     Coverage pass: all requirements map to tasks
+     No issues found. Safe to apply.
+```
+
+- **`/opsx:probe`** — depth-first grilling before propose; saves a `probe-report.md` that `/opsx:propose` reads automatically
+- **`/opsx:constitution`** — one-time project setup; draft plan-level MUST/SHOULD invariants in `openspec/constitution.md`
+- **`/opsx:analyze`** — read-only pre-apply audit; checks artifacts against the constitution; MUST violations are advisory-blocking
+
+See the [discipline guide](docs/opsx-discipline-guide.md) for full usage.
+
+</details>
 
 <details>
 <summary><strong>OpenSpec Dashboard</strong></summary>
@@ -112,7 +157,8 @@ If you want the expanded workflow (`/opsx:new`, `/opsx:continue`, `/opsx:ff`, `/
 → **[Supported Tools](docs/supported-tools.md)**: tool integrations & install paths<br>
 → **[Concepts](docs/concepts.md)**: how it all fits<br>
 → **[Multi-Language](docs/multi-language.md)**: multi-language support<br>
-→ **[Customization](docs/customization.md)**: make it yours
+→ **[Customization](docs/customization.md)**: make it yours<br>
+→ **[Discipline Guide](docs/opsx-discipline-guide.md)**: probe · constitution · analyze · apply-TDD
 
 
 ## Community schemas
@@ -128,6 +174,7 @@ AI coding assistants are powerful but unpredictable when requirements live only 
 
 - **Agree before you build** — human and AI align on specs before code gets written
 - **Stay organized** — each change gets its own folder with proposal, specs, design, and tasks
+- **Track progress live** — `/opsx:apply` registers each task upfront so you can watch them move from pending → in progress → done in real time
 - **Work fluidly** — update any artifact anytime, no rigid phase gates
 - **Use your tools** — works with 20+ AI assistants via slash commands
 

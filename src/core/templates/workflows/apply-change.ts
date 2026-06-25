@@ -61,9 +61,15 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - **spec-driven**: proposal, specs, design, tasks
    - Other schemas: follow the contextFiles from CLI output
 
-5. **Show current progress**
+5. **Create task progress list**
 
-   Display:
+   Before starting implementation, register each pending task in the session task system. Use whatever mechanism the current platform provides — for example, TaskCreate in Claude Code, todo tools in Codex, or equivalent in other environments. This makes progress visible in the UI throughout the session.
+
+   For each pending task in the apply instructions output:
+   - Register a task/todo entry with the task title
+   - Track the returned ID (if any) so you can update status later
+
+   Then announce the session plan to the user:
    - Schema being used
    - TDD Mode: \`<tddMode>\`
    - Progress: "N/M tasks complete"
@@ -87,17 +93,19 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
    **For each pending task:**
 
-   1. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
-   2. **Write failing tests** for any scenario that has no existing test yet:
+   1. **Mark task in_progress**: Update the task/todo entry to \`in_progress\` (via the platform task mechanism) before starting work.
+   2. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
+   3. **Write failing tests** for any scenario that has no existing test yet:
       - Translate the scenario's WHEN/THEN/AND into a test assertion
       - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
-   3. **Write the minimal implementation** required to make the related tests pass
-   4. **Run related tests**: confirm they are GREEN
-   5. **(Optional) Refactor** while keeping all previously-green tests green
-   6. **Mark task complete** using this rule:
+   4. **Write the minimal implementation** required to make the related tests pass
+   5. **Run related tests**: confirm they are GREEN
+   6. **(Optional) Refactor** while keeping all previously-green tests green
+   7. **Mark task complete** using this rule:
       - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
       - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
       - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
+      - After marking \`- [x]\` in the tasks file, update the task/todo entry to \`completed\`
 
    **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
@@ -265,9 +273,15 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - **spec-driven**: proposal, specs, design, tasks
    - Other schemas: follow the contextFiles from CLI output
 
-5. **Show current progress**
+5. **Create task progress list**
 
-   Display:
+   Before starting implementation, register each pending task in the session task system. Use whatever mechanism the current platform provides — for example, TaskCreate in Claude Code, todo tools in Codex, or equivalent in other environments. This makes progress visible in the UI throughout the session.
+
+   For each pending task in the apply instructions output:
+   - Register a task/todo entry with the task title
+   - Track the returned ID (if any) so you can update status later
+
+   Then announce the session plan to the user:
    - Schema being used
    - TDD Mode: \`<tddMode>\`
    - Progress: "N/M tasks complete"
@@ -291,17 +305,19 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
    **For each pending task:**
 
-   1. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
-   2. **Write failing tests** for any scenario that has no existing test yet:
+   1. **Mark task in_progress**: Update the task/todo entry to \`in_progress\` (via the platform task mechanism) before starting work.
+   2. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
+   3. **Write failing tests** for any scenario that has no existing test yet:
       - Translate the scenario's WHEN/THEN/AND into a test assertion
       - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
-   3. **Write the minimal implementation** required to make the related tests pass
-   4. **Run related tests**: confirm they are GREEN
-   5. **(Optional) Refactor** while keeping all previously-green tests green
-   6. **Mark task complete** using this rule:
+   4. **Write the minimal implementation** required to make the related tests pass
+   5. **Run related tests**: confirm they are GREEN
+   6. **(Optional) Refactor** while keeping all previously-green tests green
+   7. **Mark task complete** using this rule:
       - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
       - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
       - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
+      - After marking \`- [x]\` in the tasks file, update the task/todo entry to \`completed\`
 
    **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
@@ -386,6 +402,8 @@ What would you like to do?
 **Guardrails**
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
+- Register each pending task in the session task system before the implementation loop begins — one entry per pending item, using whatever mechanism the current platform provides
+- Mark each task \`in_progress\` before starting it; mark \`completed\` after \`- [x]\` in the tasks file
 - Read \`tddMode\` from apply instructions JSON before the loop; respect it throughout
 - Test runner detection: degrade to \`tddMode: "off"\` if no runner found, announce it
 - For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
@@ -397,7 +415,7 @@ What would you like to do?
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task
-- Pause on errors, blockers, or unclear requirements — do not guess
+- Pause on errors, blockers, or uncertain requirements — do not guess
 - Use contextFiles from CLI output, do not assume specific file names
 
 **Fluid Workflow Integration**
