@@ -38,7 +38,7 @@ Our philosophy:
 >
 > Run `/opsx:propose "your idea"` to get started. → [Learn more here](docs/opsx.md)
 >
-> **New discipline tools:** `/opsx:probe` (pre-propose grilling), `/opsx:constitution` (project invariants), `/opsx:analyze` (pre-apply audit). → [Discipline guide](docs/opsx-discipline-guide.md)
+> **New discipline tools:** `/opsx:probe` (pre-propose grilling), `/opsx:constitution` (project invariants), `/opsx:analyze` (pre-apply audit), `/opsx:handoff` (session handoff doc). → [Discipline guide](docs/opsx-discipline-guide.md)
 
 <p align="center">
   Follow <a href="https://x.com/0xTab">@0xTab on X</a> for updates · Join the <a href="https://discord.gg/YctCnvvshC">OpenSpec Discord</a> for help and questions.
@@ -103,11 +103,16 @@ AI:  Constitution Alignment — 2 clauses, 0 waivers
      ✓ II. Simplicity first (SHOULD) — design stays minimal
      Coverage pass: all requirements map to tasks
      No issues found. Safe to apply.
+
+You: /opsx:handoff add-dark-mode
+AI:  Compacted session into docs/handoff/2026-06-25-add-dark-mode.md
+     Open a fresh agent and point it at the doc to continue.
 ```
 
 - **`/opsx:probe`** — depth-first grilling before propose; saves a `probe-report.md` that `/opsx:propose` reads automatically
 - **`/opsx:constitution`** — one-time project setup; draft plan-level MUST/SHOULD invariants in `openspec/constitution.md`
 - **`/opsx:analyze`** — read-only pre-apply audit; checks artifacts against the constitution; MUST violations are advisory-blocking
+- **`/opsx:handoff`** — compact the current session into `docs/handoff/` so a fresh agent can pick up the work
 
 See the [discipline guide](docs/opsx-discipline-guide.md) for full usage.
 
