@@ -12,6 +12,13 @@ export function getProbeSkillTemplate(): SkillTemplate {
     description: 'Probe a change before proposing: depth-first grilling over a 6-layer question tree, producing probe-report.md. Use when the user wants to align deeply on scope, design, and assumptions before generating artifacts.',
     instructions: `Probe a change before \`/opsx:propose\` — converge on decisions and surface hidden assumptions.
 
+**INTERACTION RULES — non-negotiable, apply throughout the entire session:**
+- **Ask ONE question per turn.** Send it as plain text. Wait for the user's answer before asking anything else. Asking multiple questions at once is bewildering.
+- **Every question must include your recommended answer**, with evidence (a file:line, a spec, or an explicit "(general assumption, unverified)").
+- **NEVER use AskUserQuestion, multiple-choice UI, or any form/options widget.** This is a pure text conversation.
+
+---
+
 probe is an OPTIONAL pre-propose alignment phase. Its job: use architecture (a question tree + grilling interaction) to reach a thinking depth the model would not reach on its own, then persist the result so it survives context compaction.
 
 **Input**: A change name (kebab-case) OR a description of what to build. Derive a kebab-case name if only a description is given.
@@ -36,7 +43,7 @@ probe is an OPTIONAL pre-propose alignment phase. Its job: use architecture (a q
 
 3. **Grill — one question at a time**
    Walk the 6-layer question tree (below) depth-first. Rules:
-   - **One question per turn.** Wait for the answer before the next question.
+   - **One question per turn.** Wait for the answer before the next question. Asking multiple questions at once is bewildering.
    - **Every question carries your recommended answer**, and the recommendation MUST cite evidence:
      - codebase evidence (e.g. \`status --json\`, a spec, a source file:line), OR
      - an explicit assumption flag: "(based on a general assumption, unverified)".
@@ -110,7 +117,8 @@ assumptions into proposal.md.
 
 **Guardrails**
 - Read before you ask; only ask what the codebase cannot answer
-- One question per turn, each with an evidence-backed recommendation
+- One question per turn — plain text only, no multiple-choice UI, no AskUserQuestion tool
+- Each question must include an evidence-backed recommendation
 - L1 & L2 always covered; L6 always output
 - Never bury an assumption — every guess becomes an \`[ASSUMED]\` line
 - Respect "enough/start"; record remaining items as open assumptions and finish`,
