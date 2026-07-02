@@ -88,7 +88,20 @@ When ready to implement, run /opsx:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+5. **Confirm open assumptions — reverse declaration, one question at a time**
+
+   Collect every \`[ASSUMED]\` decision into proposal.md's \`## Open Assumptions\` section (create the section even when no probe-report.md exists):
+   - items carried verbatim from probe-report.md, plus
+   - every decision you made during artifact creation without user confirmation (scope cuts, capability boundaries, task ordering, naming, defaults).
+
+   Then walk the list with the user, probe-style:
+   - **One question per assumption, one at a time**, using the **AskUserQuestion tool** with preset options: your recommended answer first, marked "(Recommended)", with evidence (a spec, \`status --json\`, a source file:line, or an explicit "general assumption, unverified"), and the plausible alternatives as the other options.
+   - **Self-contained questions**: artifacts are machine-facing — the user will NOT open them. Each question must carry everything needed to decide inline: the assumption, the evidence, and what changes downstream if it is overturned.
+   - **Write back immediately**: after each answer, patch every affected artifact before asking the next question. A confirmed assumption becomes a decision recorded in proposal.md; an overturned one means you rework the affected artifacts now — never defer the edit.
+   - **Bounded**: ask each assumption exactly once. Do not re-open intent or scope already settled (that is \`/opsx:probe\`'s job), and do not re-review artifacts wholesale after patching.
+   - **Escape hatch**: if the user says "enough" / "use your recommendations" / "your call", keep the remaining items as \`[ASSUMED]\` lines in \`## Open Assumptions\` and finish.
+
+6. **Show final status**
    \`\`\`bash
    openspec status --change "<name>"
    \`\`\`
@@ -98,6 +111,7 @@ When ready to implement, run /opsx:apply
 After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions
+- Assumptions: how many were confirmed/overturned in step 5, and any that remain \`[ASSUMED]\`
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run \`/opsx:apply\` or ask me to implement to start working on the tasks."
 
@@ -110,12 +124,12 @@ After completing all artifacts, summarize:
 - **IMPORTANT**: \`context\` and \`rules\` are constraints for YOU, not content for the file
   - Do NOT copy \`<context>\`, \`<rules>\`, \`<project_context>\` blocks into the artifact
   - These guide what you write, but should never appear in the output
-- If a probe-report.md exists, proposal.md MUST contain a \`## Open Assumptions\` section listing every \`[ASSUMED]\` item from the report. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
+- proposal.md MUST contain a \`## Open Assumptions\` section — every \`[ASSUMED]\` item from probe-report.md (if present) plus every unconfirmed decision you made while drafting. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
 
 **Guardrails**
 - Create ALL artifacts needed for implementation (as defined by schema's \`apply.requires\`)
 - Always read dependency artifacts before creating a new one
-- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
+- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum; record every such decision as \`[ASSUMED]\` so step 5 surfaces it
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next`,
     license: 'MIT',
@@ -208,7 +222,20 @@ When ready to implement, run /opsx:apply
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+5. **Confirm open assumptions — reverse declaration, one question at a time**
+
+   Collect every \`[ASSUMED]\` decision into proposal.md's \`## Open Assumptions\` section (create the section even when no probe-report.md exists):
+   - items carried verbatim from probe-report.md, plus
+   - every decision you made during artifact creation without user confirmation (scope cuts, capability boundaries, task ordering, naming, defaults).
+
+   Then walk the list with the user, probe-style:
+   - **One question per assumption, one at a time**, using the **AskUserQuestion tool** with preset options: your recommended answer first, marked "(Recommended)", with evidence (a spec, \`status --json\`, a source file:line, or an explicit "general assumption, unverified"), and the plausible alternatives as the other options.
+   - **Self-contained questions**: artifacts are machine-facing — the user will NOT open them. Each question must carry everything needed to decide inline: the assumption, the evidence, and what changes downstream if it is overturned.
+   - **Write back immediately**: after each answer, patch every affected artifact before asking the next question. A confirmed assumption becomes a decision recorded in proposal.md; an overturned one means you rework the affected artifacts now — never defer the edit.
+   - **Bounded**: ask each assumption exactly once. Do not re-open intent or scope already settled (that is \`/opsx:probe\`'s job), and do not re-review artifacts wholesale after patching.
+   - **Escape hatch**: if the user says "enough" / "use your recommendations" / "your call", keep the remaining items as \`[ASSUMED]\` lines in \`## Open Assumptions\` and finish.
+
+6. **Show final status**
    \`\`\`bash
    openspec status --change "<name>"
    \`\`\`
@@ -218,6 +245,7 @@ When ready to implement, run /opsx:apply
 After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions
+- Assumptions: how many were confirmed/overturned in step 5, and any that remain \`[ASSUMED]\`
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run \`/opsx:apply\` to start implementing."
 
@@ -230,12 +258,12 @@ After completing all artifacts, summarize:
 - **IMPORTANT**: \`context\` and \`rules\` are constraints for YOU, not content for the file
   - Do NOT copy \`<context>\`, \`<rules>\`, \`<project_context>\` blocks into the artifact
   - These guide what you write, but should never appear in the output
-- If a probe-report.md exists, proposal.md MUST contain a \`## Open Assumptions\` section listing every \`[ASSUMED]\` item from the report. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
+- proposal.md MUST contain a \`## Open Assumptions\` section — every \`[ASSUMED]\` item from probe-report.md (if present) plus every unconfirmed decision you made while drafting. Carrying assumptions forward visibly is required — do not drop or silently resolve them.
 
 **Guardrails**
 - Create ALL artifacts needed for implementation (as defined by schema's \`apply.requires\`)
 - Always read dependency artifacts before creating a new one
-- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
+- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum; record every such decision as \`[ASSUMED]\` so step 5 surfaces it
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next`
   };

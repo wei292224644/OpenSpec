@@ -50,8 +50,8 @@ const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
   getOpsxOnboardCommandTemplate: '57c1f3e2590bda8f47818bab1d528456c1b8a9a7501f63ab9e2115e0cfaf6f35',
   getOpsxBulkArchiveCommandTemplate: 'b76c421023ccb5a12867c349f27cdb186234b692c1811980fb94127567bdabda',
   getOpsxVerifyCommandTemplate: '9a7a3f9e5bc3d0c0878b1a4493efbbb38729597d9b9be78f63284cc2da7c20c3',
-  getOpsxProposeSkillTemplate: '5dde3ed992e899d0c1f0c8e57ee0700d70a0edefdab92e93d2285b7562987932',
-  getOpsxProposeCommandTemplate: 'bc3402e9cd54fa691c0a3582d2fb001fbf6987776c3f882eef4bd5cef003bc71',
+  getOpsxProposeSkillTemplate: '39e165561c49a3abcbe3965569f9b2fd4588039fc2c0eec7b4bfa98d438c5e9b',
+  getOpsxProposeCommandTemplate: '8fd5118829a3d668b89a8e4d56d1f2f57e1c3b0d94e2423cfc10aac57b0bc35a',
   getFeedbackSkillTemplate: 'd7d83c5f7fc2b92fe8f4588a5bf2d9cb315e4c73ec19bcd5ef28270906319a0d',
 };
 
@@ -66,7 +66,7 @@ const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
   'openspec-bulk-archive-change': '16207683996b1952559cd4e33463f28fb097761f2c5d912107733d01a90d3f2f',
   'openspec-verify-change': 'a2acecd0c2b4e57080a314e5e7a093e0688293c37e446eb45d378f5050058550',
   'openspec-onboard': 'b924ea3c97543ebb7ee82c5f194afe7ce87a521c32b85616f445240ab33a02ab',
-  'openspec-propose': '5aade9c5b019e2f8f177711a8af72585d705c7e15917732960db45f545637708',
+  'openspec-propose': '0092df55bfaeb606190f67b0905c0bc72d4aa2667eb6df9d357a43a169e54e87',
 };
 
 function stableStringify(value: unknown): string {
