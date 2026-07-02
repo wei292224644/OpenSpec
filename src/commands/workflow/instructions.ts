@@ -286,9 +286,10 @@ export async function generateApplyInstructions(
   const schema = resolveSchema(context.schemaName, projectRoot);
   const applyConfig = schema.apply;
 
-  // Read tddMode from project config (default: 'default')
+  // Read tddMode and commitMode from project config
   const projectConfig = readProjectConfig(projectRoot);
   const tddMode = projectConfig?.tddMode ?? 'default';
+  const commitMode = projectConfig?.commitMode ?? 'task';
 
   // Determine required artifacts and tracking file from schema
   // Fallback: if no apply block, require all artifacts
@@ -372,6 +373,7 @@ export async function generateApplyInstructions(
     missingArtifacts: missingArtifacts.length > 0 ? missingArtifacts : undefined,
     instruction,
     tddMode,
+    commitMode,
   };
 }
 
@@ -415,11 +417,12 @@ export async function applyInstructionsCommand(options: ApplyInstructionsOptions
 }
 
 export function printApplyInstructionsText(instructions: ApplyInstructions): void {
-  const { changeName, schemaName, initiative, contextFiles, progress, tasks, state, missingArtifacts, instruction, tddMode } = instructions;
+  const { changeName, schemaName, initiative, contextFiles, progress, tasks, state, missingArtifacts, instruction, tddMode, commitMode } = instructions;
 
   console.log(`## Apply: ${changeName}`);
   console.log(`Schema: ${schemaName}`);
   console.log(`TDD Mode: ${tddMode}`);
+  console.log(`Commit Mode: ${commitMode}`);
   if (initiative) {
     console.log(`Initiative: ${initiative.store}/${initiative.id}`);
   }

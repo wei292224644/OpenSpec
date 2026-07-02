@@ -44,6 +44,12 @@ export const ProjectConfigSchema = z.object({
     .enum(['strict', 'default', 'off'])
     .optional()
     .describe("TDD discipline level: 'strict' | 'default' | 'off'"),
+
+  // Per-task commit behavior for the apply phase
+  commitMode: z
+    .enum(['task', 'off'])
+    .optional()
+    .describe("Apply-phase commit behavior: 'task' (commit per completed task) | 'off'"),
 });
 
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
@@ -167,6 +173,19 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
       } else {
         console.warn(
           `Invalid 'tddMode' in config (must be 'strict', 'default', or 'off'), ignoring`
+        );
+      }
+    }
+
+    // Parse commitMode field
+    if (raw.commitMode !== undefined) {
+      const commitModeField = z.enum(['task', 'off']);
+      const commitResult = commitModeField.safeParse(raw.commitMode);
+      if (commitResult.success) {
+        config.commitMode = commitResult.data;
+      } else {
+        console.warn(
+          `Invalid 'commitMode' in config (must be 'task' or 'off'), ignoring`
         );
       }
     }

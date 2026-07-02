@@ -816,6 +816,37 @@ artifacts:
       const json = JSON.parse(result.stdout);
       expect(json.tddMode).toBe('off');
     });
+
+    it('includes commitMode: off in apply instructions JSON when set in config.yaml', async () => {
+      await createTestChange('commit-off', ['proposal', 'design', 'specs', 'tasks']);
+      await fs.mkdir(path.join(tempDir, 'openspec'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, 'openspec', 'config.yaml'),
+        'schema: spec-driven\ncommitMode: off\n'
+      );
+
+      const result = await runCLI(
+        ['instructions', 'apply', '--change', 'commit-off', '--json'],
+        { cwd: tempDir }
+      );
+
+      expect(result.exitCode).toBe(0);
+      const json = JSON.parse(result.stdout);
+      expect(json.commitMode).toBe('off');
+    });
+
+    it('defaults commitMode to "task" in apply instructions JSON when not set', async () => {
+      await createTestChange('commit-default', ['proposal', 'design', 'specs', 'tasks']);
+
+      const result = await runCLI(
+        ['instructions', 'apply', '--change', 'commit-default', '--json'],
+        { cwd: tempDir }
+      );
+
+      expect(result.exitCode).toBe(0);
+      const json = JSON.parse(result.stdout);
+      expect(json.commitMode).toBe('task');
+    });
   });
 
   describe('help text', () => {

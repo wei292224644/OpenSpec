@@ -39,6 +39,8 @@ export interface ApplyInstructions {
   instruction: string;
   /** TDD discipline level for this apply session. Defaults to 'default' if not in config. */
   tddMode: 'strict' | 'default' | 'off';
+  /** Per-task commit behavior for this apply session. Defaults to 'task' if not in config. */
+  commitMode: 'task' | 'off';
 }
 
 // -----------------------------------------------------------------------------

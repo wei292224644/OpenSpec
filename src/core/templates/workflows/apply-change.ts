@@ -52,6 +52,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    This returns:
    - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
    - \`tddMode\`: TDD discipline level — \`"strict"\` | \`"default"\` | \`"off"\`
+   - \`commitMode\`: per-task commit behavior — \`"task"\` | \`"off"\`
    - Progress (total, complete, remaining)
    - Task list with status
    - Dynamic instruction based on current state
@@ -81,6 +82,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    Then announce the session plan to the user:
    - Schema being used
    - TDD Mode: \`<tddMode>\`
+   - Commit Mode: \`<commitMode>\`
    - Progress: "N/M tasks complete"
    - Remaining tasks overview
    - Dynamic instruction from CLI
@@ -92,6 +94,10 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - \`"strict"\`: same as default, plus every delta scenario must be covered by a green test before the change is done
    - \`"off"\`: no test gates (document/spike projects)
 
+   **Interpret \`commitMode\`:**
+   - \`"task"\`: commit after each completed task — the task's code changes and its checkbox flip in one atomic commit
+   - \`"off"\`: never commit; leave all changes in the working tree
+
    **Test runner detection (run once before the loop):**
    Check whether a test runner is available by looking for one of:
    - \`vitest.config.ts\` / \`vitest.config.js\`
@@ -99,6 +105,10 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - \`mocha.opts\` / \`.mocharc.*\`
    - A \`"test"\` script in \`package.json\`
    If none found, announce: "No test runner detected — tddMode degraded to 'off'" and proceed without test gates for this session.
+
+   **Git detection (run once before the loop, only when \`commitMode\` is \`"task"\`):**
+   - If the project is not a git repository (\`git rev-parse --git-dir\` fails), announce: "Not a git repo — commitMode degraded to 'off'" and skip all commit steps this session.
+   - Record pre-existing dirty files via \`git status --porcelain\`. Those changes belong to the user — never stage or commit them.
 
    **For each pending task:**
 
@@ -115,6 +125,12 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
       - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
       - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
       - After marking \`- [x]\` in the tasks file, update the task/todo entry to \`completed\`
+   8. **Commit the task** (skip when \`commitMode\` is \`"off"\` or degraded):
+      - Stage ONLY the files you created or modified for this task, plus the tasks file with its checkbox flip — list them explicitly: \`git add <file> <file> ...\`. NEVER use \`git add -A\`, \`git add .\`, or \`git add -u\`
+      - Commit message: \`task(<change-id>): <N.M> <task title>\` (e.g., \`task(add-user-auth): 1.3 Implement CSV export endpoint\`)
+      - If a file touched by this task was already dirty before the session and your changes cannot be cleanly separated: skip this task's commit, announce it, and continue
+      - If a hook (e.g., pre-commit) rejects the commit: report the hook output and continue with the next task — NEVER retry with \`--no-verify\`
+      - Never push, never create branches, never amend previous commits
 
    **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
@@ -130,6 +146,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
    - Test suite results (run the full test suite and report actual output)
+   - Commits made this session (paste actual \`git log --oneline\` output for this session's commits; note any tasks whose commit was skipped, or "none" when \`commitMode\` is \`"off"\`)
    - **Change-level coverage gate** (depends on \`tddMode\`):
      - \`"default"\`: every scenario that **has** a test must be GREEN. Scenarios with **no** test → list them as a warning (does NOT block reporting all-done).
      - \`"strict"\`: **every** delta scenario must have a GREEN test. If any delta scenario lacks a test, or has a RED test → **STOP. Do NOT report all-done and do NOT suggest archive.** List the uncovered/red scenarios and ask the user to add tests or record a waiver. The \`no-test\` escape is closed in strict mode.
@@ -140,7 +157,7 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 **Output During Implementation**
 
 \`\`\`
-## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>)
+## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>, commitMode: <commitMode>)
 
 Working on task 3/7: <task description>
   Scenarios: <scenario names this task advances>
@@ -148,6 +165,7 @@ Working on task 3/7: <task description>
   Implementing...
   Tests: GREEN
 ✓ Task complete
+  Committed: task(<change-id>): 3.1 <task title>
 
 Working on task 4/7: <task description>
   (No scenario closed by this task — marking done on code complete)
@@ -162,6 +180,7 @@ Working on task 4/7: <task description>
 **Change:** <change-name>
 **Schema:** <schema-name>
 **TDD Mode:** <tddMode>
+**Commit Mode:** <commitMode>
 **Progress:** N/M tasks complete
 
 ### Completed This Session
@@ -171,6 +190,9 @@ Working on task 4/7: <task description>
 
 ### Test Results
 <paste actual test runner output here>
+
+### Commits This Session
+<paste actual git log --oneline output for this session's commits, or "none (commitMode: off)">
 
 All tasks complete! Ready to archive this change.
 \`\`\`
@@ -183,6 +205,7 @@ All tasks complete! Ready to archive this change.
 **Change:** <change-name>
 **Schema:** <schema-name>
 **TDD Mode:** <tddMode>
+**Commit Mode:** <commitMode>
 **Progress:** 4/7 tasks complete
 
 ### Issue Encountered
@@ -200,6 +223,9 @@ What would you like to do?
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
 - Read \`tddMode\` from apply instructions JSON before the loop; respect it throughout
+- Read \`commitMode\` from apply instructions JSON before the loop; when \`"task"\`, commit each completed task — code changes + checkbox flip in one atomic commit, message \`task(<change-id>): <N.M> <task title>\`
+- Stage files explicitly per task — never \`git add -A\`, \`git add .\`, or \`git add -u\`; pre-existing dirty files are never staged or committed
+- Never bypass hooks with \`--no-verify\`, never push, never amend previous commits; if not a git repo, degrade commitMode to 'off' and announce it
 - Test runner detection: degrade to \`tddMode: "off"\` if no runner found, announce it
 - For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
 - For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete
@@ -275,6 +301,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    This returns:
    - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema)
    - \`tddMode\`: TDD discipline level — \`"strict"\` | \`"default"\` | \`"off"\`
+   - \`commitMode\`: per-task commit behavior — \`"task"\` | \`"off"\`
    - Progress (total, complete, remaining)
    - Task list with status
    - Dynamic instruction based on current state
@@ -304,6 +331,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    Then announce the session plan to the user:
    - Schema being used
    - TDD Mode: \`<tddMode>\`
+   - Commit Mode: \`<commitMode>\`
    - Progress: "N/M tasks complete"
    - Remaining tasks overview
    - Dynamic instruction from CLI
@@ -315,6 +343,10 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - \`"strict"\`: same as default, plus every delta scenario must be covered by a green test before the change is done
    - \`"off"\`: no test gates (document/spike projects)
 
+   **Interpret \`commitMode\`:**
+   - \`"task"\`: commit after each completed task — the task's code changes and its checkbox flip in one atomic commit
+   - \`"off"\`: never commit; leave all changes in the working tree
+
    **Test runner detection (run once before the loop):**
    Check whether a test runner is available by looking for one of:
    - \`vitest.config.ts\` / \`vitest.config.js\`
@@ -322,6 +354,10 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - \`mocha.opts\` / \`.mocharc.*\`
    - A \`"test"\` script in \`package.json\`
    If none found, announce: "No test runner detected — tddMode degraded to 'off'" and proceed without test gates for this session.
+
+   **Git detection (run once before the loop, only when \`commitMode\` is \`"task"\`):**
+   - If the project is not a git repository (\`git rev-parse --git-dir\` fails), announce: "Not a git repo — commitMode degraded to 'off'" and skip all commit steps this session.
+   - Record pre-existing dirty files via \`git status --porcelain\`. Those changes belong to the user — never stage or commit them.
 
    **For each pending task:**
 
@@ -338,6 +374,12 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
       - **Partially advances a scenario** (more tasks remain that implement scenario X): mark done as soon as code is complete — tests may still be RED (legal WIP)
       - **Does not advance any scenario** (pure refactor / config / migration): no test gate — mark done when code is complete
       - After marking \`- [x]\` in the tasks file, update the task/todo entry to \`completed\`
+   8. **Commit the task** (skip when \`commitMode\` is \`"off"\` or degraded):
+      - Stage ONLY the files you created or modified for this task, plus the tasks file with its checkbox flip — list them explicitly: \`git add <file> <file> ...\`. NEVER use \`git add -A\`, \`git add .\`, or \`git add -u\`
+      - Commit message: \`task(<change-id>): <N.M> <task title>\` (e.g., \`task(add-user-auth): 1.3 Implement CSV export endpoint\`)
+      - If a file touched by this task was already dirty before the session and your changes cannot be cleanly separated: skip this task's commit, announce it, and continue
+      - If a hook (e.g., pre-commit) rejects the commit: report the hook output and continue with the next task — NEVER retry with \`--no-verify\`
+      - Never push, never create branches, never amend previous commits
 
    **"Closes a scenario" judgment:** After completing code changes, scan the remaining pending tasks. If no remaining task further implements scenario X, this task closes scenario X.
 
@@ -353,6 +395,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
    - Test suite results (run the full test suite and report actual output)
+   - Commits made this session (paste actual \`git log --oneline\` output for this session's commits; note any tasks whose commit was skipped, or "none" when \`commitMode\` is \`"off"\`)
    - **Change-level coverage gate** (depends on \`tddMode\`):
      - \`"default"\`: every scenario that **has** a test must be GREEN. Scenarios with **no** test → list them as a warning (does NOT block reporting all-done).
      - \`"strict"\`: **every** delta scenario must have a GREEN test. If any delta scenario lacks a test, or has a RED test → **STOP. Do NOT report all-done and do NOT suggest archive.** List the uncovered/red scenarios and ask the user to add tests or record a waiver.
@@ -363,7 +406,7 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 **Output During Implementation**
 
 \`\`\`
-## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>)
+## Implementing: <change-name> (schema: <schema-name>, tddMode: <tddMode>, commitMode: <commitMode>)
 
 Working on task 3/7: <task description>
   Scenarios: <scenario names this task advances>
@@ -371,6 +414,7 @@ Working on task 3/7: <task description>
   Implementing...
   Tests: GREEN
 ✓ Task complete
+  Committed: task(<change-id>): 3.1 <task title>
 
 Working on task 4/7: <task description>
   (No scenario closed by this task — marking done on code complete)
@@ -385,6 +429,7 @@ Working on task 4/7: <task description>
 **Change:** <change-name>
 **Schema:** <schema-name>
 **TDD Mode:** <tddMode>
+**Commit Mode:** <commitMode>
 **Progress:** N/M tasks complete
 
 ### Completed This Session
@@ -394,6 +439,9 @@ Working on task 4/7: <task description>
 
 ### Test Results
 <paste actual test runner output here>
+
+### Commits This Session
+<paste actual git log --oneline output for this session's commits, or "none (commitMode: off)">
 
 All tasks complete! You can archive this change with \`/opsx:archive\`.
 \`\`\`
@@ -406,6 +454,7 @@ All tasks complete! You can archive this change with \`/opsx:archive\`.
 **Change:** <change-name>
 **Schema:** <schema-name>
 **TDD Mode:** <tddMode>
+**Commit Mode:** <commitMode>
 **Progress:** 4/7 tasks complete
 
 ### Issue Encountered
@@ -425,6 +474,9 @@ What would you like to do?
 - Register each pending task in the session task system before the implementation loop begins — one entry per pending item, using whatever mechanism the current platform provides
 - Mark each task \`in_progress\` before starting it; mark \`completed\` after \`- [x]\` in the tasks file
 - Read \`tddMode\` from apply instructions JSON before the loop; respect it throughout
+- Read \`commitMode\` from apply instructions JSON before the loop; when \`"task"\`, commit each completed task — code changes + checkbox flip in one atomic commit, message \`task(<change-id>): <N.M> <task title>\`
+- Stage files explicitly per task — never \`git add -A\`, \`git add .\`, or \`git add -u\`; pre-existing dirty files are never staged or committed
+- Never bypass hooks with \`--no-verify\`, never push, never amend previous commits; if not a git repo, degrade commitMode to 'off' and announce it
 - Test runner detection: degrade to \`tddMode: "off"\` if no runner found, announce it
 - For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
 - For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete

@@ -554,6 +554,66 @@ rules:
         expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
     });
+
+    describe('commitMode field', () => {
+      it('should parse commitMode: task', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ncommitMode: task\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.commitMode).toBe('task');
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('should parse commitMode: off', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ncommitMode: off\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.commitMode).toBe('off');
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('should warn and omit commitMode when value is invalid', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\ncommitMode: always\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect(config?.commitMode).toBeUndefined();
+        expect(consoleWarnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('commitMode')
+        );
+      });
+
+      it('should be omitted (not present) when not set in config', () => {
+        const configDir = path.join(tempDir, 'openspec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(configDir, 'config.yaml'),
+          'schema: spec-driven\n'
+        );
+
+        const config = readProjectConfig(tempDir);
+
+        expect('commitMode' in (config ?? {})).toBe(false);
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('validateConfigRules', () => {

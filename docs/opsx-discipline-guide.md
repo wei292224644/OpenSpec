@@ -188,8 +188,11 @@ waivers:
 ```yaml
 schema: spec-driven
 tddMode: default        # strict | default | off，不写默认为 default
+commitMode: task        # task | off，不写默认为 task
 ```
-该值经 `openspec instructions apply --change <name> --json` 暴露给 apply skill。无效值会告警并忽略（回退到不带该字段的行为）。
+两个值都经 `openspec instructions apply --change <name> --json` 暴露给 apply skill。无效值会告警并忽略（回退到不带该字段的行为）。
+
+`commitMode: task` 下，每个任务完成（打勾）后 apply 会把该任务触及的文件和 tasks.md 的勾选**原子提交**，message 格式 `task(<change-id>): <N.M> <任务标题>`——git log 与 tasks.md 互为索引，接力/回滚有据可查。护栏：只 stage 本任务触及的文件（绝不 `git add -A`）；session 开始前已脏的文件永不提交；hook 拒绝不用 `--no-verify` 硬闯；不 push、不建分支、不 amend；非 git 仓库自动降级为 `off` 并宣告。
 
 ### 3.2 三档语义
 
