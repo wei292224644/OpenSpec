@@ -12,6 +12,15 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
     description: 'Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks.',
     instructions: `Implement tasks from an OpenSpec change with TDD discipline.
 
+**TDD DISCIPLINE — the point of this skill, not a side gate:**
+- **One test at a time.** Drive ONE behavior to green before writing the next test. Never write a batch of tests up front, then a batch of implementation — that is "horizontal slicing" and it produces tests coupled to imagined behavior that pass when things break.
+  \`\`\`
+  WRONG (horizontal):  RED: test1..test5   then  GREEN: impl1..impl5
+  RIGHT (vertical):    test1→impl1,  test2→impl2,  test3→impl3, ...
+  \`\`\`
+- **Test behavior through public interfaces, not implementation.** A good test reads like a spec ("user can checkout with valid cart") and survives an internal refactor. Do NOT mock internal collaborators, assert on private methods, or verify data shapes — a green test that breaks on refactor is worse than no test.
+- The \`tddMode\` gates below decide when a task is *done*; this block decides *how* you get there. A green gate does not excuse batched or implementation-coupled tests.
+
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
@@ -95,11 +104,11 @@ export function getApplyChangeSkillTemplate(): SkillTemplate {
 
    1. **Mark task in_progress**: Update the task/todo entry to \`in_progress\` (via the platform task mechanism) before starting work.
    2. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
-   3. **Write failing tests** for any scenario that has no existing test yet:
-      - Translate the scenario's WHEN/THEN/AND into a test assertion
+   3. **Write ONE failing test** for the single scenario/behavior you are currently driving — not all of the task's scenarios at once:
+      - Translate that scenario's WHEN/THEN/AND into a test assertion that exercises the public interface
       - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
-   4. **Write the minimal implementation** required to make the related tests pass
-   5. **Run related tests**: confirm they are GREEN
+   4. **Write the minimal implementation** to make that one test pass — only enough to go green, don't anticipate later tests
+   5. **Run the test**: confirm it is GREEN (and previously-green tests stay green). If the task touches more scenarios, repeat 3→5 one behavior at a time — never batch-write all the task's tests first
    6. **(Optional) Refactor** while keeping all previously-green tests green
    7. **Mark task complete** using this rule:
       - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
@@ -195,6 +204,8 @@ What would you like to do?
 - For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
 - For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete
 - For tasks with no scenario: no test required — mark done when code is complete
+- One test at a time: drive each behavior to green before the next; never batch all of a task's tests then all of its implementation (horizontal slicing)
+- Tests must verify behavior through public interfaces and survive an internal refactor — no mocking internal collaborators, no asserting on private state; a green but implementation-coupled test does not satisfy the gate
 - Change-level gate (\`default\`): a covered scenario may not stay RED at close; uncovered scenarios warn but do not block
 - Change-level gate (\`strict\`): every delta scenario must have a GREEN test — if any is missing or RED, STOP, do not report all-done, do not suggest archive; \`no-test\` escape requires a recorded waiver
 - Completion output MUST include actual test runner output, not a hardcoded claim
@@ -223,6 +234,15 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Implement tasks from an OpenSpec change with TDD discipline.
+
+**TDD DISCIPLINE — the point of this skill, not a side gate:**
+- **One test at a time.** Drive ONE behavior to green before writing the next test. Never write a batch of tests up front, then a batch of implementation — that is "horizontal slicing" and it produces tests coupled to imagined behavior that pass when things break.
+  \`\`\`
+  WRONG (horizontal):  RED: test1..test5   then  GREEN: impl1..impl5
+  RIGHT (vertical):    test1→impl1,  test2→impl2,  test3→impl3, ...
+  \`\`\`
+- **Test behavior through public interfaces, not implementation.** A good test reads like a spec ("user can checkout with valid cart") and survives an internal refactor. Do NOT mock internal collaborators, assert on private methods, or verify data shapes — a green test that breaks on refactor is worse than no test.
+- The \`tddMode\` gates below decide when a task is *done*; this block decides *how* you get there. A green gate does not excuse batched or implementation-coupled tests.
 
 **Input**: Optionally specify a change name (e.g., \`/opsx:apply add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
@@ -307,11 +327,11 @@ export function getOpsxApplyCommandTemplate(): CommandTemplate {
 
    1. **Mark task in_progress**: Update the task/todo entry to \`in_progress\` (via the platform task mechanism) before starting work.
    2. **Map the task to scenarios**: Read the task description and the specs context files to identify which WHEN/THEN/AND scenarios this task advances.
-   3. **Write failing tests** for any scenario that has no existing test yet:
-      - Translate the scenario's WHEN/THEN/AND into a test assertion
+   3. **Write ONE failing test** for the single scenario/behavior you are currently driving — not all of the task's scenarios at once:
+      - Translate that scenario's WHEN/THEN/AND into a test assertion that exercises the public interface
       - Run the test and confirm it fails (RED) — do not proceed if it passes or errors with a setup problem
-   4. **Write the minimal implementation** required to make the related tests pass
-   5. **Run related tests**: confirm they are GREEN
+   4. **Write the minimal implementation** to make that one test pass — only enough to go green, don't anticipate later tests
+   5. **Run the test**: confirm it is GREEN (and previously-green tests stay green). If the task touches more scenarios, repeat 3→5 one behavior at a time — never batch-write all the task's tests first
    6. **(Optional) Refactor** while keeping all previously-green tests green
    7. **Mark task complete** using this rule:
       - **Closes a scenario** (this is the last task that implements scenario X): that scenario's tests MUST be GREEN before marking \`- [ ] → - [x]\`
@@ -409,6 +429,8 @@ What would you like to do?
 - For tasks that close a scenario: do NOT mark \`- [x]\` until that scenario's tests are GREEN
 - For tasks that partially advance a scenario: RED tests are legal — mark done when code is complete
 - For tasks with no scenario: no test required — mark done when code is complete
+- One test at a time: drive each behavior to green before the next; never batch all of a task's tests then all of its implementation (horizontal slicing)
+- Tests must verify behavior through public interfaces and survive an internal refactor — no mocking internal collaborators, no asserting on private state; a green but implementation-coupled test does not satisfy the gate
 - Change-level gate (\`default\`): a covered scenario may not stay RED at close; uncovered scenarios warn but do not block
 - Change-level gate (\`strict\`): every delta scenario must have a GREEN test — if any is missing or RED, STOP, do not report all-done, do not suggest archive
 - Completion output MUST include actual test runner output, not a hardcoded claim
