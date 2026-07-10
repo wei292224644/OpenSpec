@@ -62,25 +62,39 @@ openspec update
 OpenSpec 的一次变更（change）走这条链。新机制用 ★ 标出：
 
 ```
+/opsx:explore ──►  ★ /opsx:probe  ──►  /opsx:propose  ──►  ★ /opsx:analyze  ──►  /opsx:apply  ──►  /opsx:verify  ──►  /opsx:archive
+ (发散,可选)         (收敛,可选,提案前)     (生成产物)         (写码前审方案)        (实现, 带 TDD)      (码 vs spec)      (归并入 specs/)
+ 无结构/无产出        probe-report.md     proposal/design/
+                                          specs/tasks
                        ┌─ openspec/constitution.md  （项目级，长期存在，所有 change 共享）
                        │            ▲
                        │      ★ /opsx:constitution  （起草/修订宪法）
                        │
-★ /opsx:probe  ──►  /opsx:propose  ──►  ★ /opsx:analyze  ──►  /opsx:apply  ──►  /opsx:verify  ──►  /opsx:archive
-  (可选,提案前)        (生成产物)         (写码前审方案)        (实现, 带 TDD)      (码 vs spec)      (归并入 specs/)
-  probe-report.md     proposal/design/                                ▲
-                      specs/tasks                          ★ tddMode (config.yaml)
+                                                                         ▲
+                                                              ★ tddMode (config.yaml)
 ```
 
-三套机制各管一段，互不重叠：
+**explore 和 probe 都在 propose 之前，但不是一回事**——都用得上的话，顺序是 explore 先、probe 后：
+
+| | explore | probe |
+|---|---|---|
+| 目的 | **发散**：还不知道要问什么问题、形状没出来 | **收敛**：已经知道要做什么，propose 前把决策钉死 |
+| 结构 | 无固定步骤，自由聊，可以不了了之 | 强制一问一答，走 6 层问题树 |
+| 产出 | 可选，甚至可以什么都不落盘 | 必须写 `probe-report.md`（propose 会自动读） |
+| 什么时候用 | 想法还很模糊，或想比较几个方案 | 想法已经成形，想在动手前把范围/设计/假设过一遍再锁定 |
+
+想法从模糊到成形的路径：先 `/opsx:explore` 想清楚"大概要做什么"，成形后如果想再深挖一层决策，接 `/opsx:probe` 走结构化拷问；如果已经足够清楚，直接跳 `/opsx:propose` 也可以——两者都不是必经步骤。
+
+四套机制各管一段，互不重叠：
 
 | 机制 | 管什么 | 时机 | 性质 |
 |---|---|---|---|
-| **probe** | 把需求/范围/假设**挖清楚** | propose **之前**（可选） | 交互式拷问，产出报告 |
+| **explore** | 把想法/问题**想清楚**（发散） | propose 之前（可选，且比 probe 更早） | 自由对话，无强制产出 |
+| **probe** | 把需求/范围/假设**挖清楚**（收敛） | propose **之前**（可选） | 交互式拷问，产出报告 |
 | **constitution + analyze** | 方案是否**越过项目原则** | propose **之后**、apply **之前** | 只读审查，建议性阻塞 |
 | **apply-TDD** | 实现是否**被测试验证** | apply **之中** | 配置驱动的测试门 |
 
-一句话区分：**probe 问"要做什么"，analyze 审"方案对不对"，apply-TDD 保"代码验没验"。**
+一句话区分：**explore 想"大概是什么"，probe 问"具体要做什么"，analyze 审"方案对不对"，apply-TDD 保"代码验没验"。**
 
 ---
 

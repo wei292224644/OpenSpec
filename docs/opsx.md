@@ -175,7 +175,7 @@ rules:
 ```
 /opsx:explore
 ```
-Think through ideas, investigate problems, compare options. No structure required - just a thinking partner. When insights crystallize, transition to `/opsx:propose` (default) or `/opsx:new`/`/opsx:ff` (expanded).
+Think through ideas, investigate problems, compare options. No structure required - just a thinking partner. When insights crystallize, transition to `/opsx:propose` (default) or `/opsx:new`/`/opsx:ff` (expanded). If you want to dig one level deeper before locking in a design — a structured, one-question-at-a-time interview that produces a persisted `probe-report.md` — use `/opsx:probe` instead of going straight to propose. See the [discipline guide](opsx-discipline-guide.md#0-它们在工作流的哪个位置) for how explore and probe relate.
 
 ### Start a new change
 ```
