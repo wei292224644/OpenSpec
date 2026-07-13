@@ -5,12 +5,15 @@
  * interaction, producing a persistent probe-report.md.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 
 export function getProbeSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-probe',
     description: 'Probe a change before proposing: depth-first grilling over a 6-layer question tree, producing probe-report.md. Use when the user wants to align deeply on scope, design, and assumptions before generating artifacts.',
     instructions: `Probe a change before \`/opsx:propose\` — converge on decisions and surface hidden assumptions.
+
+${STORE_SELECTION_GUIDANCE}
 
 **INTERACTION RULES — non-negotiable, apply throughout the entire session:**
 - **Ask exactly ONE question per message, as plain text, then stop and wait for the reply.** Asking multiple questions at once is bewildering — the user loses the thread and answers shallowly, which defeats the whole point of probing.
@@ -127,6 +130,8 @@ export function getOpsxProbeCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'planning', 'experimental'],
     content: `Probe a change before \`/opsx:propose\`: depth-first grilling over a 6-layer question tree, producing \`openspec/changes/<name>/probe-report.md\`.
+
+${STORE_SELECTION_GUIDANCE}
 
 Follow the openspec-probe skill. This is a free-text interview: ask exactly ONE question per message and wait for the reply — never use option-card / multiple-choice tools (e.g. AskUserQuestion) to collect answers.
 

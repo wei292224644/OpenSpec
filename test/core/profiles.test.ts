@@ -10,9 +10,13 @@ describe('profiles', () => {
   describe('CORE_WORKFLOWS', () => {
     it('should contain the default core workflows', () => {
       expect(CORE_WORKFLOWS).toEqual([
-        'propose', 'explore', 'apply', 'sync', 'archive',
+        'propose', 'explore', 'apply', 'update', 'sync', 'archive',
         'probe', 'constitution', 'analyze', 'handoff',
       ]);
+    });
+
+    it('should include update in the core profile (default install, not expanded-only)', () => {
+      expect(CORE_WORKFLOWS).toContain('update');
     });
 
     it('should be a subset of ALL_WORKFLOWS', () => {
@@ -23,13 +27,13 @@ describe('profiles', () => {
   });
 
   describe('ALL_WORKFLOWS', () => {
-    it('should contain all 15 workflows', () => {
-      expect(ALL_WORKFLOWS).toHaveLength(15);
+    it('should contain all 16 workflows', () => {
+      expect(ALL_WORKFLOWS).toHaveLength(16);
     });
 
     it('should contain expected workflow IDs', () => {
       const expected = [
-        'propose', 'explore', 'new', 'continue', 'apply',
+        'propose', 'explore', 'new', 'continue', 'apply', 'update',
         'ff', 'sync', 'archive', 'bulk-archive', 'verify', 'onboard',
         'probe', 'constitution', 'analyze', 'handoff',
       ];

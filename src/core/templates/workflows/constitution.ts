@@ -1,10 +1,13 @@
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 
 export function getConstitutionSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-constitution',
     description: 'Draft or revise the project constitution (plan-level invariants). Use when establishing or updating openspec/constitution.md.',
     instructions: `Draft or revise the project constitution at openspec/constitution.md.
+
+${STORE_SELECTION_GUIDANCE}
 
 **Steps**
 
@@ -50,6 +53,8 @@ export function getOpsxConstitutionCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'constitution', 'experimental'],
     content: `Run the constitution workflow to create or update openspec/constitution.md.
+
+${STORE_SELECTION_GUIDANCE}
 
 Follow the openspec-constitution skill. Start with:
 \`\`\`bash

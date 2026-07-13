@@ -8,9 +8,9 @@ import {
 
 describe('skill-generation', () => {
   describe('getSkillTemplates', () => {
-    it('should return all 15 skill templates', () => {
+    it('should return all 16 skill templates', () => {
       const templates = getSkillTemplates();
-      expect(templates).toHaveLength(15);
+      expect(templates).toHaveLength(16);
     });
 
     it('should have unique directory names', () => {
@@ -28,6 +28,7 @@ describe('skill-generation', () => {
       expect(dirNames).toContain('openspec-new-change');
       expect(dirNames).toContain('openspec-continue-change');
       expect(dirNames).toContain('openspec-apply-change');
+      expect(dirNames).toContain('openspec-update-change');
       expect(dirNames).toContain('openspec-ff-change');
       expect(dirNames).toContain('openspec-sync-specs');
       expect(dirNames).toContain('openspec-archive-change');
@@ -38,6 +39,7 @@ describe('skill-generation', () => {
       expect(dirNames).toContain('openspec-constitution');
       expect(dirNames).toContain('openspec-analyze-change');
       expect(dirNames).toContain('openspec-probe');
+      expect(dirNames).toContain('openspec-handoff');
     });
 
     it('should have valid template structure', () => {
@@ -91,9 +93,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandTemplates', () => {
-    it('should return all 15 command templates', () => {
+    it('should return all 16 command templates', () => {
       const templates = getCommandTemplates();
-      expect(templates).toHaveLength(15);
+      expect(templates).toHaveLength(16);
     });
 
     it('should have unique IDs', () => {
@@ -111,6 +113,7 @@ describe('skill-generation', () => {
       expect(ids).toContain('new');
       expect(ids).toContain('continue');
       expect(ids).toContain('apply');
+      expect(ids).toContain('update');
       expect(ids).toContain('ff');
       expect(ids).toContain('sync');
       expect(ids).toContain('archive');
@@ -121,6 +124,7 @@ describe('skill-generation', () => {
       expect(ids).toContain('constitution');
       expect(ids).toContain('analyze');
       expect(ids).toContain('probe');
+      expect(ids).toContain('handoff');
     });
 
     it('should filter by workflow IDs when provided', () => {
@@ -148,9 +152,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandContents', () => {
-    it('should return all 15 command contents', () => {
+    it('should return all 16 command contents', () => {
       const contents = getCommandContents();
-      expect(contents).toHaveLength(15);
+      expect(contents).toHaveLength(16);
     });
 
     it('should have valid content structure', () => {

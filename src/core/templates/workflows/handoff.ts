@@ -10,12 +10,15 @@
  * handoff survives as a referenceable project artifact.
  */
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 
 export function getHandoffSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-handoff',
     description: 'Compact the current session into a handoff document under docs/handoff/ so a fresh agent can continue the work. Use when the user wants to wrap up, hand off, or compact a long session before starting a new conversation.',
     instructions: `Write a handoff document that summarises the current session so a fresh agent can continue the work.
+
+${STORE_SELECTION_GUIDANCE}
 
 **Input** (optional): A short description of what the NEXT session will focus on. If given, tailor the document toward that focus.
 
@@ -87,6 +90,8 @@ export function getOpsxHandoffCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'handoff', 'experimental'],
     content: `Compact the current session into a handoff document so a fresh agent can continue.
+
+${STORE_SELECTION_GUIDANCE}
 
 Follow the openspec-handoff skill. Write the document to \`docs/handoff/<YYYY-MM-DD>-<slug>.md\` in the current workspace.
 

@@ -1,10 +1,13 @@
 import type { SkillTemplate, CommandTemplate } from '../types.js';
+import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 
 export function getAnalyzeChangeSkillTemplate(): SkillTemplate {
   return {
     name: 'openspec-analyze-change',
     description: 'Pre-apply read-only analysis: constitution alignment + artifact consistency. Use after propose, before apply.',
     instructions: `Analyze a change against the project constitution and artifact consistency. READ-ONLY — do not modify any files.
+
+${STORE_SELECTION_GUIDANCE}
 
 **Authority**: Constitution is non-negotiable during analyze. On MUST violations, adjust the plan — do NOT reinterpret or delete clauses. Constitution changes require /opsx:constitution separately.
 
@@ -73,6 +76,8 @@ export function getOpsxAnalyzeCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'analyze', 'experimental'],
     content: `Analyze a change against the project constitution before implementation.
+
+${STORE_SELECTION_GUIDANCE}
 
 Follow the openspec-analyze-change skill. Start with:
 \`\`\`bash
